@@ -75,6 +75,115 @@ psql -h localhost -U nexphys_user -d nexphys_db \
 npm run migration:run:tenant
 ```
 
+### Git Repository Issues
+
+#### ❌ "Divergent Branches" on Git Pull
+
+```bash
+➜ git pull
+hint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+hint:
+hint:   git config pull.rebase false  # merge
+hint:   git config pull.rebase true   # rebase
+hint:   git config pull.ff only       # fast-forward only
+```
+
+**Sorun Nedir?**
+Bu hata, yerel branch'inizde (örneğin `main`) ve uzak repository'deki (örneğin `origin/main`) branch'te farklı değişiklikler olduğunda meydana gelir. Git, iki farklı tarihçeyi nasıl birleştireceğinizi belirlemenizi istiyor.
+
+**Çözüm Seçenekleri:**
+
+1. **Merge Stratejisi (`git config pull.rebase false`):**
+   ```bash
+   git config pull.rebase false
+   # veya direkt olarak
+   git pull --no-rebase
+   ```
+   **Ne Yapar?** Uzak değişiklikleri yerel değişikliklerle birleştiren bir merge commit oluşturur.
+   
+   **Avantajları:**
+   - Tarihçeyi değiştirmez, sadece yeni bir commit ekler
+   - Basit ve güvenli bir seçenektir
+   - Conflict durumunda çözümü kolaydır
+   
+   **Dezavantajları:**
+   - Tarihçe karmaşık hale gelebilir (özellikle çok sayıda merge commit olursa)
+   - "Merge commit" oluşturduğu için branch tarihçesi daha karmaşık görünür
+
+2. **Rebase Stratejisi (`git config pull.rebase true`):**
+   ```bash
+   git config pull.rebase true
+   # veya direkt olarak
+   git pull --rebase
+   ```
+   **Ne Yapar?** Yerel değişikliklerinizi geçici olarak kaldırır, uzak değişiklikleri çeker ve ardından kendi değişikliklerinizi bu yeni temelin üzerine yeniden uygular.
+   
+   **Avantajları:**
+   - Daha temiz, doğrusal bir commit tarihçesi oluşturur
+   - Gereksiz merge commit'leri oluşturmaz
+   - Branch tarihçesi daha anlaşılır olur
+   
+   **Dezavantajları:**
+   - Conflict çözümü daha karmaşık olabilir
+   - Halka açık branch'lerde kullanırken dikkatli olunmalı (commit hash'leri değişir)
+   - Kompleks konfliktlerde daha fazla manuel müdahale gerektirebilir
+
+3. **Fast-Forward Only (`git config pull.ff only`):**
+   ```bash
+   git config pull.ff only
+   # veya direkt olarak
+   git pull --ff-only
+   ```
+   **Ne Yapar?** Sadece fast-forward pull işlemine izin verir, yani uzak repoda değişiklik varsa ve sizin yerel değişikliğiniz yoksa çalışır.
+   
+   **Avantajları:**
+   - En temiz tarihçeyi oluşturur
+   - Beklenmedik birleştirme ve karmaşık conflict durumlarını engeller
+   - Proje disiplinini artırır
+   
+   **Dezavantajları:**
+   - Yerel değişiklikleriniz varsa pull işlemi başarısız olur
+   - Manuel olarak durumu çözmeniz gerekir (stash, rebase, vb.)
+   - Daha fazla Git komutu bilgisi gerektirir
+
+**Genel Öneriler:**
+
+- **Küçük Takımlar ve Kişisel Projeler:** `rebase` stratejisi temiz bir tarihçe için idealdir.
+- **Büyük Takımlar ve Halka Açık Projeler:** `merge` stratejisi daha güvenlidir.
+- **İleri Düzey Git Kullanıcıları:** `ff-only` stratejisi disiplinli bir yaklaşım için iyidir.
+
+**Tek Seferlik Çözüm:**
+
+Konfigürasyon ayarını değiştirmek istemiyorsanız, tek seferlik çözüm için:
+
+```bash
+# Merge stratejisi için
+git pull --no-rebase
+
+# Rebase stratejisi için
+git pull --rebase
+
+# Fast-forward only stratejisi için
+git pull --ff-only
+```
+
+**Global Ayarı Değiştirme:**
+
+Tüm Git repolarınız için varsayılan ayarı değiştirmek isterseniz:
+
+```bash
+# Merge stratejisi için
+git config --global pull.rebase false
+
+# Rebase stratejisi için
+git config --global pull.rebase true
+
+# Fast-forward only stratejisi için
+git config --global pull.ff only
+```
+
 ### Authentication Issues
 
 #### ❌ "Invalid or expired token"

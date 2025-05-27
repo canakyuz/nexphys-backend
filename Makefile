@@ -113,11 +113,14 @@ nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant typ
 
 seed-public-nexphys: ## Seed public schema with nexphys.com data
 	@echo "🌱 Seeding public schema with nexphys.com data..."
-	npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
+	docker-compose exec api npx ts-node -r tsconfig-paths/register src/scripts/seed-tenants-manually.ts
 
 seed-tenants-nexphys: ## Seed all tenant schemas with nexphys.com users
 	@echo "🌱 Seeding all tenant schemas with nexphys.com users..."
-	NODE_ENV=development DB_HOST=localhost DB_PORT=5432 node scripts/seed-tenant-users.js
+	@echo "🔄 Seeding role types for each tenant schema..."
+	docker-compose exec api npx ts-node -r tsconfig-paths/register src/scripts/seed-role-types.ts
+	@echo "🔄 Seeding test users for each tenant schema..."
+	docker-compose exec api npx ts-node -r tsconfig-paths/register src/scripts/seed-test-users.ts
 
 seed-specific-nexphys-tenant: ## Seed specific nexphys.com tenant (TENANT=domain)
 	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make seed-specific-nexphys-tenant TENANT=fitmax-gym.nexphys.com"; exit 1; fi
@@ -149,6 +152,34 @@ demo-setup: ## Complete demo setup with all tenant types
 	make seed-tenants-local
 	@echo "✅ Demo setup complete!"
 	@echo ""
+
+##@ Database Management
+create-migration: ## Create a new migration file (NAME=MigrationName, TYPE=public|tenant)
+	@if [ -z "$(NAME)" ]; then echo "❌ NAME is required. Usage: make create-migration NAME=CreateUserTable TYPE=public"; exit 1; fi
+	@if [ -z "$(TYPE)" ]; then echo "❌ TYPE is required (public or tenant). Usage: make create-migration NAME=CreateUserTable TYPE=public"; exit 1; fi
+	@if [ "$(TYPE)" != "public" ] && [ "$(TYPE)" != "tenant" ]; then echo "❌ TYPE must be 'public' or 'tenant'"; exit 1; fi
+	@echo "📝 Creating $(TYPE) migration: $(NAME)..."
+	docker-compose exec api npm run typeorm migration:create -- ./src/shared/database/migrations/$(TYPE)/$(NAME)
+	@echo "✅ Migration created at src/shared/database/migrations/$(TYPE)/$(NAME)"
+
+show-tenant-schemas: ## Show all tenant schemas in the database
+	@echo "📊 Tenant schemas in database:"
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+
+show-tenant-users: ## Show users for a specific tenant (TENANT=schema_name)
+	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make show-tenant-users TENANT=tenant_fitmax_gym"; exit 1; fi
+	@echo "📊 Users in tenant $(TENANT):"
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT id, email, first_name, last_name, role, status FROM $(TENANT).users;"
+
+reset-tenant: ## Reset a specific tenant schema (TENANT=schema_name)
+	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make reset-tenant TENANT=tenant_fitmax_gym"; exit 1; fi
+	@echo "⚠️ WARNING: This will DROP the $(TENANT) schema and all its data!"
+	@read -p "Are you sure you want to continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🗑️ Dropping schema $(TENANT)..."
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "DROP SCHEMA IF EXISTS $(TENANT) CASCADE;"
+	@echo "🔄 Creating schema $(TENANT)..."
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "CREATE SCHEMA $(TENANT);"
+	@echo "✅ Tenant schema reset complete!"
 	@echo "🏢 Available Tenants:"
 	@echo "  • FitMax Gym (GYM): fitmax-gym"
 	@echo "  • Zen Yoga Studio (STUDIO): zen-yoga" 
@@ -243,6 +274,9 @@ status: ## Show full system status
 down:
 	docker-compose down -v
 
+reset:
+	docker-compose down -v
+	docker-compose up -d
 
 install-bcrypt:
 	docker-compose exec api npm install bcrypt @types/bcrypt

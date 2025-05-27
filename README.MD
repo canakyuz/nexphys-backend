@@ -105,6 +105,110 @@ Authorization: Bearer <token>
 X-Tenant-Domain: my-gym
 ```
 
+## 🗃️ Multi-Tenant Database Management
+
+### Migration Sistemi
+
+Nexphys backend projesinde TypeORM tabanlı migration sistemi kullanılmaktadır. Bu sistem, veritabanı şema değişikliklerini kod olarak yönetmeyi sağlar.
+
+#### Migration Kavramı
+
+```
+Migration (Göç): Veritabanı şemasında yapılan değişiklikleri takip etmenizi ve bu değişiklikleri
+uygulama kodundan yönetmenizi sağlayan bir sistemdir.
+```
+
+#### Migration Oluşturma
+
+```bash
+# Yeni migration oluşturma
+make create-migration NAME=MigrationAdi TYPE=public
+
+# TYPE parametresi:
+# - public: Ana şema için migrationlar
+# - tenant: Tenant şemaları için migrationlar
+```
+
+#### Migration Dosya Yapısı
+
+```typescript
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class CreateUserTable1234567890123 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        // İleri göç: Yeni şema değişiklikleri burada uygulanır
+        await queryRunner.query(`
+            CREATE TABLE "users" (
+                "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+                "email" VARCHAR(255) NOT NULL UNIQUE,
+                "password" VARCHAR(255) NOT NULL,
+                PRIMARY KEY ("id")
+            )
+        `);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        // Geri göç: Değişiklikleri geri alma işlemi
+        await queryRunner.query(`DROP TABLE "users"`);
+    }
+}
+```
+
+#### Migration'ları Çalıştırma
+
+```bash
+# Tüm kurulumu tek komutla yapma
+make nexphys-dev-setup
+
+# Sadece public şema işlemleri
+make seed-public-nexphys
+
+# Tenant şemaları için işlemler
+make seed-tenants-nexphys
+
+# Belirli bir tenant için seed işlemi
+make seed-specific-nexphys-tenant TENANT=fitmax-gym.nexphys.com
+```
+
+### Tenant Şema Yönetimi
+
+#### Mevcut Tenant Şemalarını Görüntüleme
+
+```bash
+make show-tenant-schemas
+```
+
+#### Belirli Bir Tenant'ın Kullanıcılarını Görüntüleme
+
+```bash
+make show-tenant-users TENANT=tenant_fitmax_gym
+```
+
+#### Tenant Şemasını Sıfırlama
+
+```bash
+make reset-tenant TENANT=tenant_fitmax_gym
+```
+
+### Test Kullanıcıları
+
+Sistemde aşağıdaki test kullanıcıları otomatik olarak oluşturulur:
+
+| Tenant | Kullanıcı Tipi | Email | Şifre |
+|--------|----------------|-------|-------|
+| FitMax Gym | Gym Owner | owner@fitmax-gym.test | Test123! |
+| FitMax Gym | Gym Coach | coach@fitmax-gym.test | Test123! |
+| FitMax Gym | Gym Member | member@fitmax-gym.test | Test123! |
+| Zen Yoga | Studio Owner | owner@zen-yoga.test | Test123! |
+| Zen Yoga | Instructor | instructor@zen-yoga.test | Test123! |
+| Zen Yoga | Member | member@zen-yoga.test | Test123! |
+| Elite PT | Coach | coach@elite-pt.test | Test123! |
+| Elite PT | Client | client1@elite-pt.test | Test123! |
+| TechCorp | Admin | admin@techcorp-wellness.test | Test123! |
+| TechCorp | Coach | coach@techcorp-wellness.test | Test123! |
+| TechCorp | Employee | employee1@techcorp-wellness.test | Test123! |
+| Public | Superadmin | superadmin@nexphys.com | Test123! |
+
 ## 🎯 Role-Based Access Control
 
 ### Role Types (Per Tenant)
