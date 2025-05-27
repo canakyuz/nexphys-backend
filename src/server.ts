@@ -110,7 +110,7 @@ class Server {
         timestamp: new Date().toISOString(),
         environment: envConfig.NODE_ENV,
         version: process.env.npm_package_version || '1.0.0',
-      }, 'NexFit API is running');
+      }, 'nexphys API is running');
     });
 
     // API routes
@@ -128,7 +128,7 @@ class Server {
   public start() {
     this.app.listen(envConfig.PORT, () => {
       logger.info('🚀 ================================');
-      logger.info(`🚀 NexFit API Server Started`);
+      logger.info(`🚀 nexphys API Server Started`);
       logger.info(`🚀 ================================`);
       logger.info(`📖 Environment: ${envConfig.NODE_ENV}`);
       logger.info(`🌐 API URL: http://localhost:${envConfig.PORT}${envConfig.API_PREFIX}`);

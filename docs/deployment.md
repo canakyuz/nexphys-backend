@@ -1,4 +1,4 @@
-# NexFit Backend - Deployment Guide
+# nexphys Backend - Deployment Guide
 
 ## 🎯 Deployment Options
 
@@ -15,7 +15,7 @@
 ```bash
 # 1. Clone repository on server
 git clone <repository-url>
-cd nexfit-backend
+cd nexphys-backend
 
 # 2. Create production environment
 cp .env.example .env.production
@@ -35,8 +35,8 @@ API_PREFIX=/api/v1
 # Database (Use managed database in production)
 DB_HOST=your-production-db-host
 DB_PORT=5432
-DB_NAME=nexfit_production
-DB_USER=nexfit_user
+DB_NAME=nexphys_production
+DB_USER=nexphys_user
 DB_PASSWORD=STRONG_PRODUCTION_PASSWORD
 
 # Security (CRITICAL: Change these!)
@@ -44,7 +44,7 @@ JWT_SECRET=SUPER_SECURE_JWT_SECRET_MIN_64_CHARS_FOR_PRODUCTION_USE
 JWT_REFRESH_SECRET=SUPER_SECURE_REFRESH_SECRET_MIN_64_CHARS_FOR_PRODUCTION
 
 # CORS (Restrict to your domains)
-CORS_ORIGIN=https://app.nexfit.com,https://admin.nexfit.com
+CORS_ORIGIN=https://app.nexphys.com,https://admin.nexphys.com
 CORS_CREDENTIALS=true
 
 # Redis (Use managed Redis in production)
@@ -57,7 +57,7 @@ SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASSWORD=your_sendgrid_api_key
-EMAIL_FROM=noreply@nexfit.com
+EMAIL_FROM=noreply@nexphys.com
 
 # File Storage
 UPLOAD_PATH=/app/uploads
@@ -109,7 +109,7 @@ services:
       - postgres
       - redis
     networks:
-      - nexfit-network
+      - nexphys-network
 
   postgres:
     image: postgres:15-alpine
@@ -122,7 +122,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
     networks:
-      - nexfit-network
+      - nexphys-network
     # Remove port exposure in production (only internal access)
 
   redis:
@@ -132,7 +132,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - nexfit-network
+      - nexphys-network
 
   nginx:
     image: nginx:alpine
@@ -146,14 +146,14 @@ services:
     depends_on:
       - api
     networks:
-      - nexfit-network
+      - nexphys-network
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  nexfit-network:
+  nexphys-network:
     driver: bridge
 ```
 
@@ -170,9 +170,9 @@ networks:
 │                Application Load Balancer                    │
 ├─────────────────────────────────────────────────────────────┤
 │  ECS Fargate Service (Auto Scaling)                        │
-│  ├── Task 1: NexFit API                                    │
-│  ├── Task 2: NexFit API                                    │
-│  └── Task 3: NexFit API                                    │
+│  ├── Task 1: nexphys API                                    │
+│  ├── Task 2: nexphys API                                    │
+│  └── Task 3: nexphys API                                    │
 ├─────────────────────────────────────────────────────────────┤
 │  RDS PostgreSQL (Multi-AZ)                                 │
 │  ElastiCache Redis Cluster                                 │
@@ -189,19 +189,19 @@ provider "aws" {
 }
 
 # VPC and Networking
-resource "aws_vpc" "nexfit_vpc" {
+resource "aws_vpc" "nexphys_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name = "nexfit-vpc"
+    Name = "nexphys-vpc"
   }
 }
 
 # RDS PostgreSQL
-resource "aws_db_instance" "nexfit_db" {
-  identifier     = "nexfit-production"
+resource "aws_db_instance" "nexphys_db" {
+  identifier     = "nexphys-production"
   engine         = "postgres"
   engine_version = "15.4"
   instance_class = "db.t3.micro"  # Adjust for production
@@ -210,52 +210,52 @@ resource "aws_db_instance" "nexfit_db" {
   max_allocated_storage = 100
   storage_encrypted     = true
   
-  db_name  = "nexfit_production"
-  username = "nexfit_user"
+  db_name  = "nexphys_production"
+  username = "nexphys_user"
   password = var.db_password
   
   vpc_security_group_ids = [aws_security_group.rds.id]
-  db_subnet_group_name   = aws_db_subnet_group.nexfit.name
+  db_subnet_group_name   = aws_db_subnet_group.nexphys.name
   
   backup_retention_period = 7
   backup_window          = "03:00-04:00"
   maintenance_window     = "Sun:04:00-Sun:05:00"
   
   skip_final_snapshot = false
-  final_snapshot_identifier = "nexfit-final-snapshot"
+  final_snapshot_identifier = "nexphys-final-snapshot"
 
   tags = {
-    Name = "nexfit-database"
+    Name = "nexphys-database"
   }
 }
 
 # ElastiCache Redis
-resource "aws_elasticache_subnet_group" "nexfit" {
-  name       = "nexfit-cache-subnet"
+resource "aws_elasticache_subnet_group" "nexphys" {
+  name       = "nexphys-cache-subnet"
   subnet_ids = [aws_subnet.private[0].id, aws_subnet.private[1].id]
 }
 
-resource "aws_elasticache_cluster" "nexfit_redis" {
-  cluster_id           = "nexfit-redis"
+resource "aws_elasticache_cluster" "nexphys_redis" {
+  cluster_id           = "nexphys-redis"
   engine               = "redis"
   node_type            = "cache.t3.micro"
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
   port                 = 6379
-  subnet_group_name    = aws_elasticache_subnet_group.nexfit.name
+  subnet_group_name    = aws_elasticache_subnet_group.nexphys.name
   security_group_ids   = [aws_security_group.redis.id]
 
   tags = {
-    Name = "nexfit-redis"
+    Name = "nexphys-redis"
   }
 }
 
 # S3 Bucket for file uploads
-resource "aws_s3_bucket" "nexfit_uploads" {
-  bucket = "nexfit-uploads-${random_string.bucket_suffix.result}"
+resource "aws_s3_bucket" "nexphys_uploads" {
+  bucket = "nexphys-uploads-${random_string.bucket_suffix.result}"
 
   tags = {
-    Name = "nexfit-uploads"
+    Name = "nexphys-uploads"
   }
 }
 ```
@@ -265,17 +265,17 @@ resource "aws_s3_bucket" "nexfit_uploads" {
 ```yaml
 # aws/task-definition.json
 {
-  "family": "nexfit-api",
+  "family": "nexphys-api",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
   "executionRoleArn": "arn:aws:iam::ACCOUNT:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::ACCOUNT:role/nexfit-task-role",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT:role/nexphys-task-role",
   "containerDefinitions": [
     {
-      "name": "nexfit-api",
-      "image": "ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/nexfit-backend:latest",
+      "name": "nexphys-api",
+      "image": "ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/nexphys-backend:latest",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -295,17 +295,17 @@ resource "aws_s3_bucket" "nexfit_uploads" {
       "secrets": [
         {
           "name": "DB_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexfit/db-password"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexphys/db-password"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexfit/jwt-secret"
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexphys/jwt-secret"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/nexfit-api",
+          "awslogs-group": "/ecs/nexphys-api",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -333,9 +333,9 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: nexfit-backend
-  ECS_SERVICE: nexfit-api-service
-  ECS_CLUSTER: nexfit-cluster
+  ECR_REPOSITORY: nexphys-backend
+  ECS_SERVICE: nexphys-api-service
+  ECS_CLUSTER: nexphys-cluster
 
 jobs:
   deploy:
@@ -377,10 +377,10 @@ jobs:
         # Run migrations in ECS task
         aws ecs run-task \
           --cluster $ECS_CLUSTER \
-          --task-definition nexfit-migration-task \
+          --task-definition nexphys-migration-task \
           --overrides '{
             "containerOverrides": [{
-              "name": "nexfit-api",
+              "name": "nexphys-api",
               "command": ["npm", "run", "migration:run:public"]
             }]
           }' \
@@ -412,7 +412,7 @@ jobs:
 ApplicationLoadBalancer:
   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
   Properties:
-    Name: nexfit-alb
+    Name: nexphys-alb
     Scheme: internet-facing
     Type: application
     SecurityGroups:
@@ -437,7 +437,7 @@ HTTPSListener:
 TargetGroup:
   Type: AWS::ElasticLoadBalancingV2::TargetGroup
   Properties:
-    Name: nexfit-api-targets
+    Name: nexphys-api-targets
     Port: 3000
     Protocol: HTTP
     VpcId: !Ref VPC
@@ -458,8 +458,8 @@ TargetGroup:
 ```bash
 # Request SSL certificate
 aws acm request-certificate \
-  --domain-name api.nexfit.com \
-  --domain-name *.nexfit.com \
+  --domain-name api.nexphys.com \
+  --domain-name *.nexphys.com \
   --validation-method DNS \
   --region us-east-1
 
@@ -510,7 +510,7 @@ ECSSecurityGroup:
         "secretsmanager:GetSecretValue"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexfit/*"
+        "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:nexphys/*"
       ]
     },
     {
@@ -521,7 +521,7 @@ ECSSecurityGroup:
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::nexfit-uploads-*/*"
+        "arn:aws:s3:::nexphys-uploads-*/*"
       ]
     }
   ]
@@ -539,14 +539,14 @@ ECSSecurityGroup:
 LogGroup:
   Type: AWS::Logs::LogGroup
   Properties:
-    LogGroupName: /ecs/nexfit-api
+    LogGroupName: /ecs/nexphys-api
     RetentionInDays: 30
 
 # CloudWatch Alarms
 CPUAlarm:
   Type: AWS::CloudWatch::Alarm
   Properties:
-    AlarmName: nexfit-high-cpu
+    AlarmName: nexphys-high-cpu
     AlarmDescription: CPU utilization is too high
     MetricName: CPUUtilization
     Namespace: AWS/ECS
@@ -588,15 +588,15 @@ app.use(Sentry.Handlers.tracingHandler());
 # Additional application-level backup
 
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_BUCKET="nexfit-backups"
+BACKUP_BUCKET="nexphys-backups"
 
 # Export tenant schemas
 aws ecs run-task \
-  --cluster nexfit-cluster \
-  --task-definition nexfit-backup-task \
+  --cluster nexphys-cluster \
+  --task-definition nexphys-backup-task \
   --overrides "{
     \"containerOverrides\": [{
-      \"name\": \"nexfit-api\",
+      \"name\": \"nexphys-api\",
       \"command\": [\"node\", \"scripts/export-tenants.js\"],
       \"environment\": [{
         \"name\": \"BACKUP_DATE\",
@@ -606,7 +606,7 @@ aws ecs run-task \
   }"
 
 # Upload logs to S3
-aws s3 sync /var/log/nexfit/ s3://$BACKUP_BUCKET/logs/$DATE/
+aws s3 sync /var/log/nexphys/ s3://$BACKUP_BUCKET/logs/$DATE/
 ```
 
 ### 2. Disaster Recovery Plan
@@ -640,7 +640,7 @@ AutoScalingTarget:
   Type: AWS::ApplicationAutoScaling::ScalableTarget
   Properties:
     ServiceNamespace: ecs
-    ResourceId: service/nexfit-cluster/nexfit-api-service
+    ResourceId: service/nexphys-cluster/nexphys-api-service
     ScalableDimension: ecs:service:DesiredCount
     MinCapacity: 2
     MaxCapacity: 20
@@ -648,7 +648,7 @@ AutoScalingTarget:
 AutoScalingPolicy:
   Type: AWS::ApplicationAutoScaling::ScalingPolicy
   Properties:
-    PolicyName: nexfit-cpu-scaling
+    PolicyName: nexphys-cpu-scaling
     PolicyType: TargetTrackingScaling
     TargetTrackingScalingPolicyConfiguration:
       TargetValue: 70.0
@@ -661,12 +661,12 @@ AutoScalingPolicy:
 ```bash
 # Read replicas for read-heavy workloads
 aws rds create-db-instance-read-replica \
-  --db-instance-identifier nexfit-read-replica \
-  --source-db-instance-identifier nexfit-production
+  --db-instance-identifier nexphys-read-replica \
+  --source-db-instance-identifier nexphys-production
 
 # Vertical scaling (during maintenance window)
 aws rds modify-db-instance \
-  --db-instance-identifier nexfit-production \
+  --db-instance-identifier nexphys-production \
   --db-instance-class db.t3.medium \
   --apply-immediately
 ```
@@ -711,4 +711,4 @@ aws rds modify-db-instance \
 
 ---
 
-**🚀 Your NexFit backend is now production-ready with enterprise-grade infrastructure!**
+**🚀 Your nexphys backend is now production-ready with enterprise-grade infrastructure!**

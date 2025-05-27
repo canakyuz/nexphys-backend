@@ -20,9 +20,9 @@ export const envConfig = {
   // Database
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_PORT: parseInt(process.env.DB_PORT || '5432'),
-  DB_NAME: process.env.DB_NAME || 'nexfit_db',
-  DB_USER: process.env.DB_USER || 'nexfit_user',
-  DB_PASSWORD: process.env.DB_PASSWORD || 'nexfit123',
+  DB_NAME: process.env.DB_NAME || 'nexphys_db',
+  DB_USER: process.env.DB_USER || 'nexphys_user',
+  DB_PASSWORD: process.env.DB_PASSWORD || 'nexphys123',
 
   // Redis
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
@@ -30,9 +30,9 @@ export const envConfig = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
 
   // JWT
-  JWT_SECRET: process.env.JWT_SECRET || 'nexfit-development-secret',
+  JWT_SECRET: process.env.JWT_SECRET || 'nexphys-development-secret',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '24h',
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'nexfit-refresh-secret',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'nexphys-refresh-secret',
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 
   // CORS

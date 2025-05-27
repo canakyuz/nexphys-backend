@@ -1,4 +1,4 @@
-# NexFit Multi-Tenant Backend
+# nexphys Multi-Tenant Backend
 
 Modern fitness platform backend with **tenant-per-schema** multi-tenancy architecture.
 
@@ -7,7 +7,7 @@ Modern fitness platform backend with **tenant-per-schema** multi-tenancy archite
 ```bash
 # Clone and setup
 git clone <repo-url>
-cd nexfit-backend
+cd nexphys-backend
 
 # Run complete setup
 chmod +x scripts/setup.sh
@@ -84,7 +84,7 @@ Every request needs tenant identification:
 X-Tenant-Domain: my-gym
 
 # Method 2: Subdomain
-my-gym.nexfit.com
+my-gym.nexphys.com
 
 # Method 3: Query parameter
 ?tenant=my-gym

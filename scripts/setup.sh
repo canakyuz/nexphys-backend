@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Setting up NexFit Multi-Tenant Backend..."
+echo "🚀 Setting up nexphys Multi-Tenant Backend..."
 
 # Create directories
 mkdir -p logs uploads
@@ -26,7 +26,7 @@ sleep 15
 
 # Check if database is ready
 echo "🔍 Checking database connection..."
-docker-compose -f docker-compose.dev.yml exec postgres pg_isready -U nexfit_user -d nexfit_dev || {
+docker-compose -f docker-compose.dev.yml exec postgres pg_isready -U nexphys_user -d nexphys_dev || {
     echo "❌ Database is not ready. Please check Docker services."
     exit 1
 }

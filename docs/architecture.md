@@ -1,12 +1,12 @@
-# NexFit Backend - Architecture Guide
+# nexphys Backend - Architecture Guide
 
 ## 🏗️ System Overview
 
-NexFit uses a **tenant-per-schema** multi-tenancy architecture, providing complete data isolation while maintaining shared infrastructure.
+nexphys uses a **tenant-per-schema** multi-tenancy architecture, providing complete data isolation while maintaining shared infrastructure.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    NexFit Platform                          │
+│                    nexphys Platform                          │
 ├─────────────────────────────────────────────────────────────┤
 │  Application Layer                                          │
 │  ├── API Gateway           # Request routing & rate limiting │
@@ -368,7 +368,7 @@ services:
   postgres:
     image: postgres:15
     environment:
-      - POSTGRES_DB=nexfit_dev
+      - POSTGRES_DB=nexphys_dev
 ```
 
 ### Production Environment

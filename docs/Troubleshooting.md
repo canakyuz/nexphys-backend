@@ -1,4 +1,4 @@
-# NexFit Backend - Troubleshooting Guide
+# nexphys Backend - Troubleshooting Guide
 
 ## 🚨 Common Issues & Quick Fixes
 
@@ -19,18 +19,18 @@ docker-compose -f docker-compose.dev.yml up -d postgres
 
 # Wait and test connection
 sleep 10
-docker-compose exec postgres pg_isready -U nexfit_user
+docker-compose exec postgres pg_isready -U nexphys_user
 ```
 
 #### ❌ "Database does not exist"
 ```bash
-Error: database "nexfit_db" does not exist
+Error: database "nexphys_db" does not exist
 ```
 
 **Quick Fix:**
 ```bash
 # Create database manually
-docker-compose exec postgres createdb -U nexfit_user nexfit_db
+docker-compose exec postgres createdb -U nexphys_user nexphys_db
 
 # Or recreate containers
 docker-compose down -v
@@ -64,11 +64,11 @@ Error: schema "tenant_xyz_abc123" does not exist
 **Quick Fix:**
 ```bash
 # Check if tenant schema was created
-psql -h localhost -U nexfit_user -d nexfit_db \
+psql -h localhost -U nexphys_user -d nexphys_db \
   -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
 
 # Manually create schema if missing
-psql -h localhost -U nexfit_user -d nexfit_db \
+psql -h localhost -U nexphys_user -d nexphys_db \
   -c "CREATE SCHEMA \"tenant_xyz_abc123\";"
 
 # Re-run tenant migrations
@@ -164,7 +164,7 @@ curl -s http://localhost:3000/health | jq .
 ### Database Diagnostics
 ```bash
 # Connect to database
-docker-compose exec postgres psql -U nexfit_user -d nexfit_db
+docker-compose exec postgres psql -U nexphys_user -d nexphys_db
 
 # Check database size
 \l+
@@ -202,11 +202,11 @@ docker-compose logs --since="1h" api
 ### Connection Diagnostics
 ```bash
 # Check active database connections
-docker-compose exec postgres psql -U nexfit_user -d nexfit_db \
-  -c "SELECT datname, usename, client_addr, state FROM pg_stat_activity WHERE datname = 'nexfit_db';"
+docker-compose exec postgres psql -U nexphys_user -d nexphys_db \
+  -c "SELECT datname, usename, client_addr, state FROM pg_stat_activity WHERE datname = 'nexphys_db';"
 
 # Check for long-running queries
-docker-compose exec postgres psql -U nexfit_user -d nexfit_db \
+docker-compose exec postgres psql -U nexphys_user -d nexphys_db \
   -c "SELECT pid, now() - pg_stat_activity.query_start AS duration, query FROM pg_stat_activity WHERE state = 'active';"
 ```
 
@@ -243,7 +243,7 @@ node --inspect src/server.ts
 DB_LOGGING=true
 
 # Analyze slow queries
-docker-compose exec postgres psql -U nexfit_user -d nexfit_db \
+docker-compose exec postgres psql -U nexphys_user -d nexphys_db \
   -c "SELECT query, mean_time, calls FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;"
 ```
 
@@ -273,7 +273,7 @@ docker-compose logs postgres
 docker-compose logs api
 
 # Inspect container
-docker inspect nexfit-postgres
+docker inspect nexphys-postgres
 
 # Remove and recreate containers
 docker-compose down -v
@@ -301,7 +301,7 @@ services:
 DEBUG=* npm run dev
 
 # Specific module debugging
-DEBUG=nexfit:* npm run dev
+DEBUG=nexphys:* npm run dev
 
 # TypeORM query debugging
 # In .env.development
@@ -368,14 +368,14 @@ ORDER BY idx_scan DESC;
 ### Database Recovery
 ```bash
 # Backup before recovery
-pg_dump -h localhost -U nexfit_user nexfit_db > backup_$(date +%Y%m%d).sql
+pg_dump -h localhost -U nexphys_user nexphys_db > backup_$(date +%Y%m%d).sql
 
 # Reset public schema
-psql -h localhost -U nexfit_user -d nexfit_db \
+psql -h localhost -U nexphys_user -d nexphys_db \
   -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 # Restore from backup
-psql -h localhost -U nexfit_user -d nexfit_db < backup_20240101.sql
+psql -h localhost -U nexphys_user -d nexphys_db < backup_20240101.sql
 
 # Re-run migrations
 npm run migration:run:public

@@ -65,7 +65,7 @@ nexphys-prod-seed-tenant: ## Seed specific tenant in production (TENANT=domain) 
 
 ##@ Tenant Demo Setup
 demo-setup: ## Complete demo setup with all tenant types
-	@echo "🚀 Setting up NexFit multi-tenant demo..."
+	@echo "🚀 Setting up nexphys multi-tenant demo..."
 	make start
 	@sleep 10
 	make migrate-public-local
@@ -122,22 +122,22 @@ db-status: ## Show database and tenant status
 	@echo "📊 Database Status:"
 	@echo "=================="
 	@echo "PostgreSQL:"
-	@docker-compose exec postgres pg_isready -U nexfit_user
+	@docker-compose exec postgres pg_isready -U nexphys_user
 	@echo ""
 	@echo "Public Schema Tables:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "\dt public.*"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "\dt public.*"
 	@echo ""
 	@echo "Tenant Schemas:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
 
 tenant-schemas: ## List all tenant schemas
 	@echo "🏢 Tenant Schemas:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM tenants t ORDER BY t.created_at;"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM tenants t ORDER BY t.created_at;"
 
 ##@ Development Helpers
 reset-all: ## Reset everything (DANGEROUS - deletes all data)
 	@echo "⚠️  WARNING: This will delete ALL data!"
-	@read -p "Are you sure? (y/N): " confirm && [ "$confirm" = "y" ] || exit 1
+	@read -p "Are you sure? (y/N): " confirm && [ "$confirm" = "y" || "$confirm" = "Y" || "$confirm" = "" ] || exit 1
 	docker-compose down -v
 	docker system prune -f
 	make start
@@ -149,7 +149,7 @@ logs-tail: ## Tail all logs
 	docker-compose logs -f --tail=50
 
 status: ## Show full system status
-	@echo "🚀 NexFit System Status"
+	@echo "🚀 nexphys System Status"
 	@echo "======================"
 	@echo "Docker Services:"
 	@docker-compose ps
@@ -158,7 +158,7 @@ status: ## Show full system status
 	@curl -s http://localhost:3000/health | jq .status
 	@echo ""
 	@echo "Database:"
-	@docker-compose exec postgres pg_isready -U nexfit_user
+	@docker-compose exec postgres pg_isready -U nexphys_user
 	@echo ""
 	@echo "Tenant Count:"
 	@curl -s http://localhost:3000/api/v1/tenants | jq '.data | length'

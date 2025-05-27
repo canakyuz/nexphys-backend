@@ -1,4 +1,4 @@
-# NexFit Backend - Security Guide
+# nexphys Backend - Security Guide
 
 ## 🔐 Authentication System
 
@@ -311,8 +311,8 @@ export class User {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://app.nexfit.com',
-      'https://admin.nexfit.com'
+      'https://app.nexphys.com',
+      'https://admin.nexphys.com'
     ];
     
     // Allow requests with no origin (mobile apps)
@@ -489,4 +489,4 @@ export class ThreatDetector {
 
 ---
 
-**🔒 Security is everyone's responsibility. Follow these guidelines to keep NexFit and user data secure.**
+**🔒 Security is everyone's responsibility. Follow these guidelines to keep nexphys and user data secure.**

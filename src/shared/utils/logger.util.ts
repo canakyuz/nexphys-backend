@@ -8,7 +8,7 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json(),
   ),
-  defaultMeta: { service: 'nexfit-api' },
+  defaultMeta: { service: 'nexphys-api' },
   transports: [
     new winston.transports.File({
       filename: 'logs/error.log',
