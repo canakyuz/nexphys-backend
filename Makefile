@@ -1,12 +1,12 @@
 # Makefile'a ek komutlar
 
 ##@ Docker Komutları
-docker-start: ## Docker container'ları başlat
+start: ## Docker container'ları başlat
 	docker-compose up -d
 	docker-compose ps
 
 
-docker-setup-all: ## Docker ortamında tam kurulum (migration ve seed işlemleri dahil)
+setup-all: ## Docker ortamında tam kurulum (migration ve seed işlemleri dahil)
 	@echo "🚀 Docker ortamında nexphys kurulumu başlatılıyor..."
 	docker-compose up -d
 	@echo "⏳ PostgreSQL'in hazır olması bekleniyor..."
@@ -88,6 +88,14 @@ seed-specific-tenant: ## Seed specific tenant (TENANT=domain)
 	DB_HOST=localhost DB_PORT=5432 npm run seed:tenant $(TENANT)
 
 ##@ Nexphys.com Development Environment
+migrate-public-local: ## Run public schema migrations locally
+	@echo "🔄 Running public schema migrations locally..."
+	docker-compose exec api npm run migration:run:public
+
+migrate-tenant-local: ## Run tenant schema migrations locally
+	@echo "🔄 Running tenant schema migrations locally..."
+	docker-compose exec api npm run migration:run:tenant
+
 nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant types
 	@echo "🚀 Setting up Nexphys.com multi-tenant development environment..."
 	make start
