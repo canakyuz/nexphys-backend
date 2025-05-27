@@ -11,6 +11,58 @@ seed-specific-tenant: ## Seed specific tenant (TENANT=domain)
 	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make seed-specific-tenant TENANT=fitmax-gym"; exit 1; fi
 	DB_HOST=localhost DB_PORT=5432 npm run seed:tenant $(TENANT)
 
+##@ Nexphys.com Development Environment
+nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant types
+	@echo "🚀 Setting up Nexphys.com multi-tenant development environment..."
+	make start
+	@sleep 10
+	make migrate-public-local
+	make seed-public-nexphys
+	make seed-tenants-nexphys
+	@echo "✅ Nexphys.com development setup complete!"
+	@echo ""
+	@echo "🏢 Available Nexphys.com Tenants:"
+	@echo "  • FitMax Gym (GYM): fitmax-gym.nexphys.com"
+	@echo "  • Zen Yoga Studio (STUDIO): zen-yoga.nexphys.com" 
+	@echo "  • Elite Personal Training (PERSONAL_TRAINER): elite-pt.nexphys.com"
+	@echo "  • TechCorp Wellness (ENTERPRISE): techcorp-wellness.nexphys.com"
+	@echo ""
+	@echo "👤 Available Roles and Users:"
+	@echo "  • Superadmin: superadmin@nexphys.com / superadmin123"
+	@echo "  • Tenant Admin: admin@nexphys.com / admin123"
+	@echo "  • GYM: owner@fitmax-gym.nexphys.com, coach@fitmax-gym.nexphys.com, member@fitmax-gym.nexphys.com / password123"
+	@echo "  • STUDIO: owner@zen-yoga.nexphys.com, instructor@zen-yoga.nexphys.com, student@zen-yoga.nexphys.com / password123"
+	@echo "  • PT: coach@elite-pt.nexphys.com, client@elite-pt.nexphys.com / password123"
+	@echo "  • ENTERPRISE: wellness@techcorp.nexphys.com, coach@techcorp.nexphys.com, employee@techcorp.nexphys.com / password123"
+
+seed-public-nexphys: ## Seed public schema with nexphys.com data
+	@echo "🌱 Seeding public schema with nexphys.com data..."
+	npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
+
+seed-tenants-nexphys: ## Seed all tenant schemas with nexphys.com users
+	@echo "🌱 Seeding all tenant schemas with nexphys.com users..."
+	NODE_ENV=development DB_HOST=localhost DB_PORT=5432 node scripts/seed-tenant-users.js
+
+seed-specific-nexphys-tenant: ## Seed specific nexphys.com tenant (TENANT=domain)
+	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make seed-specific-nexphys-tenant TENANT=fitmax-gym.nexphys.com"; exit 1; fi
+	@echo "🌱 Seeding nexphys.com tenant: $(TENANT)..."
+	NODE_ENV=development DB_HOST=localhost DB_PORT=5432 node scripts/seed-tenant-users.js $(TENANT)
+
+##@ Nexphys.com Production Environment
+nexphys-prod-init: ## Initialize nexphys.com production database with migrations (NON-DESTRUCTIVE)
+	@echo "⚠️ WARNING: This will apply migrations to PRODUCTION database!"
+	@read -p "Are you sure you want to continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🔧 Initializing production database with migrations..."
+	NODE_ENV=production npm run migration:run -- -d ./src/shared/database/config/public-connection.ts
+	@echo "✅ Production migrations complete!"
+
+nexphys-prod-seed-tenant: ## Seed specific tenant in production (TENANT=domain) (USE WITH CAUTION)
+	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make nexphys-prod-seed-tenant TENANT=custom-domain.nexphys.com"; exit 1; fi
+	@echo "⚠️ WARNING: This will seed users for $(TENANT) in PRODUCTION!"
+	@read -p "Are you sure you want to continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🌱 Seeding production tenant: $(TENANT)..."
+	NODE_ENV=production node scripts/seed-tenant-users.js $(TENANT)
+
 ##@ Tenant Demo Setup
 demo-setup: ## Complete demo setup with all tenant types
 	@echo "🚀 Setting up NexFit multi-tenant demo..."
@@ -37,33 +89,33 @@ test-tenants: ## Test all tenant endpoints
 	@curl -s http://localhost:3000/api/v1/tenants | jq .
 	@echo "\n"
 
-test-gym-auth: ## Test gym authentication
-	@echo "🧪 Testing gym authentication..."
+test-nexphys-gym-auth: ## Test nexphys gym authentication
+	@echo "🧪 Testing nexphys gym authentication..."
 	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
-		-H "X-Tenant-Domain: fitmax-gym" \
-		-d '{"email": "member@fitmax-gym.com", "password": "password123"}' | jq .
+		-H "X-Tenant-Domain: fitmax-gym.nexphys.com" \
+		-d '{"email": "owner@fitmax-gym.nexphys.com", "password": "password123"}' | jq .
 
-test-studio-auth: ## Test studio authentication  
-	@echo "🧪 Testing studio authentication..."
+test-nexphys-studio-auth: ## Test nexphys studio authentication  
+	@echo "🧪 Testing nexphys studio authentication..."
 	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
-		-H "X-Tenant-Domain: zen-yoga" \
-		-d '{"email": "student@zen-yoga.com", "password": "password123"}' | jq .
+		-H "X-Tenant-Domain: zen-yoga.nexphys.com" \
+		-d '{"email": "instructor@zen-yoga.nexphys.com", "password": "password123"}' | jq .
 
-test-pt-auth: ## Test personal trainer authentication
-	@echo "🧪 Testing personal trainer authentication..."
+test-nexphys-pt-auth: ## Test nexphys personal trainer authentication
+	@echo "🧪 Testing nexphys personal trainer authentication..."
 	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
-		-H "X-Tenant-Domain: elite-pt" \
-		-d '{"email": "coach@elite-pt.com", "password": "password123"}' | jq .
+		-H "X-Tenant-Domain: elite-pt.nexphys.com" \
+		-d '{"email": "coach@elite-pt.nexphys.com", "password": "password123"}' | jq .
 
-test-enterprise-auth: ## Test enterprise authentication
-	@echo "🧪 Testing enterprise authentication..."
+test-nexphys-enterprise-auth: ## Test nexphys enterprise authentication
+	@echo "🧪 Testing nexphys enterprise authentication..."
 	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
-		-H "X-Tenant-Domain: techcorp-wellness" \
-		-d '{"email": "wellness@techcorp.com", "password": "password123"}' | jq .
+		-H "X-Tenant-Domain: techcorp-wellness.nexphys.com" \
+		-d '{"email": "wellness@techcorp.nexphys.com", "password": "password123"}' | jq .
 
 ##@ Database Status
 db-status: ## Show database and tenant status
