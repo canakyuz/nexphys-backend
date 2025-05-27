@@ -4,4 +4,4 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE EXTENSION IF NOT EXISTS "btree_gin";
 
 -- Grant permissions
-GRANT ALL ON SCHEMA public TO nexfit_user;
+GRANT ALL ON SCHEMA public TO nexphys_user;

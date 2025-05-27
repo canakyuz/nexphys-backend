@@ -2,7 +2,7 @@
 
 API_URL="http://localhost:3000/api/v1"
 
-echo "🧪 Testing NexFit Multi-Tenant API..."
+echo "🧪 Testing nexphys Multi-Tenant API..."
 echo "================================="
 
 # Colors for output

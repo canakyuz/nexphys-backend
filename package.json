@@ -1,7 +1,7 @@
 {
-  "name": "nexfit-backend",
+  "name": "nexphys-backend",
   "version": "1.0.0",
-  "description": "NexFit Multi-Tenant Fitness Platform Backend with Tenant-Per-Schema Architecture",
+  "description": "nexphys Multi-Tenant Fitness Platform Backend with Tenant-Per-Schema Architecture",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
@@ -24,6 +24,7 @@
     "seed:nexphys:public": "typeorm-ts-node-commonjs migration:run -d src/shared/database/config/public-connection.ts --name=SeedAdminUsers",
     "seed:nexphys:tenants": "node scripts/seed-tenant-users.js",
     "seed:nexphys:tenant": "node scripts/seed-tenant-users.js",
+    "seed:test-users": "ts-node -r tsconfig-paths/register scripts/run-test-users-seed.ts",
     "demo:setup": "npm run migration:run:public && npm run seed:public && npm run seed:tenant",
     "demo:reset": "npm run demo:setup",
     "lint": "eslint src/**/*.ts",
@@ -100,6 +101,6 @@
     "rbac",
     "tenant-per-schema"
   ],
-  "author": "NexFit Team",
+  "author": "nexphys Team",
   "license": "MIT"
 }

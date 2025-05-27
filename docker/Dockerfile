@@ -6,9 +6,9 @@ RUN apk add --no-cache curl
 # Create app directory
 WORKDIR /app
 
-# Create nexfit user
+# Create nexphys user
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nexfit -u 1001 -G nodejs
+    adduser -S nexphys -u 1001 -G nodejs
 
 # Copy package files
 COPY package*.json ./
@@ -16,15 +16,18 @@ COPY package*.json ./
 # Install ALL dependencies (including dev dependencies for development)
 RUN npm ci
 
+# Install modules
+RUN npm install
+
 # Copy source code
 COPY . .
 
 # Create directories and set permissions
 RUN mkdir -p logs uploads dist && \
-    chown -R nexfit:nodejs /app
+    chown -R nexphys:nodejs /app
 
 # Switch to non-root user
-USER nexfit
+USER nexphys
 
 # Expose port
 EXPOSE 3000

@@ -19,9 +19,9 @@ require('dotenv').config();
 const config = {
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'nexfit_db',
-  user: process.env.DB_USER || 'nexfit_user',
-  password: process.env.DB_PASSWORD || 'nexfit_password',
+  database: process.env.DB_NAME || 'nexphys_db',
+  user: process.env.DB_USER || 'nexphys_user',
+  password: process.env.DB_PASSWORD || 'nexphys_password',
 };
 
 // Parse command line arguments

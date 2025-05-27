@@ -3,35 +3,35 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: nexfit-postgres
+    container_name: nexphys-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: nexfit_db
-      POSTGRES_USER: nexfit_user
-      POSTGRES_PASSWORD: nexfit123
+      POSTGRES_DB: nexphys_db
+      POSTGRES_USER: nexphys_user
+      POSTGRES_PASSWORD: nexphys123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres:/docker-entrypoint-initdb.d
     networks:
-      - nexfit-network
+      - nexphys-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nexfit_user -d nexfit_db"]
+      test: ["CMD-SHELL", "pg_isready -U nexphys_user -d nexphys_db"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   redis:
     image: redis:7-alpine
-    container_name: nexfit-redis
+    container_name: nexphys-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - nexfit-network
+      - nexphys-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -42,7 +42,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: nexfit-api
+    container_name: nexphys-api
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -64,7 +64,7 @@ services:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
     networks:
-      - nexfit-network
+      - nexphys-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -76,5 +76,5 @@ volumes:
   redis_data:
 
 networks:
-  nexfit-network:
+  nexphys-network:
     driver: bridge

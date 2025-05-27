@@ -1,4 +1,4 @@
-# NexFit Backend - Setup Guide
+# nexphys Backend - Setup Guide
 
 ## 📋 Prerequisites
 
@@ -11,7 +11,7 @@
 ```bash
 # 1. Clone repository
 git clone <repository-url>
-cd nexfit-backend
+cd nexphys-backend
 
 # 2. Run setup script (does everything)
 chmod +x scripts/setup.sh
@@ -82,7 +82,7 @@ curl http://localhost:3000/health
 ```json
 {
   "success": true,
-  "message": "NexFit API is running",
+  "message": "nexphys API is running",
   "environment": "development"
 }
 ```
@@ -129,9 +129,9 @@ docker-compose ps
 # Development (default)
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=nexfit_db
-DB_USER=nexfit_user
-DB_PASSWORD=nexfit_password
+DB_NAME=nexphys_db
+DB_USER=nexphys_user
+DB_PASSWORD=nexphys_password
 
 # Production
 DB_HOST=your-production-host
@@ -153,7 +153,7 @@ tenant_gym_abc.workouts # Gym ABC workouts
 ## 📁 Project Structure
 
 ```
-nexfit-backend/
+nexphys-backend/
 ├── src/
 │   ├── modules/           # Business modules
 │   │   ├── tenants/      # Tenant management

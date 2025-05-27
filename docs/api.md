@@ -1,4 +1,4 @@
-# NexFit Backend - API Reference
+# nexphys Backend - API Reference
 
 ## 🌐 Base Information
 
@@ -378,7 +378,7 @@ Always include tenant context in requests:
 X-Tenant-Domain: my-fitness-gym
 
 # Alternative methods
-Host: my-fitness-gym.nexfit.com
+Host: my-fitness-gym.nexphys.com
 ?tenant=my-fitness-gym
 ```
 

@@ -11,7 +11,7 @@ export class SeedAdminUsers1717517193824 implements MigrationInterface {
       INSERT INTO "public"."users" (
         "id", "email", "password", "first_name", "last_name", "status", "role", "created_at", "updated_at"
       ) VALUES (
-        'sup-admin-001', 'superadmin@nexphys.com', '${passwordHash}', 'Super', 'Admin', 'ACTIVE', 'SUPERADMIN',
+        '550e8400-e29b-41d4-a716-446655440999', 'superadmin@nexphys.com', '${passwordHash}', 'Super', 'Admin', 'ACTIVE', 'SUPERADMIN',
         NOW(), NOW()
       ) ON CONFLICT ("email") DO NOTHING;
     `);
@@ -21,7 +21,7 @@ export class SeedAdminUsers1717517193824 implements MigrationInterface {
       INSERT INTO "public"."settings" (
         "id", "key", "value", "created_at", "updated_at"
       ) VALUES (
-        'setting-dns-001', 'domain_verification', '{"enabled": true, "method": "DNS_TXT", "ttl": 3600}',
+        '550e8400-e29b-41d4-a716-446655440900', 'domain_verification', '{"enabled": true, "method": "DNS_TXT", "ttl": 3600}',
         NOW(), NOW()
       ) ON CONFLICT ("key") DO NOTHING;
     `);
@@ -30,40 +30,40 @@ export class SeedAdminUsers1717517193824 implements MigrationInterface {
     const tenantTypes = ['GYM', 'STUDIO', 'PERSONAL_TRAINER', 'ENTERPRISE'];
     const tenants = [
       {
-        id: 'tenant-gym-001',
+        id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'FitMax Gym',
         domain: 'fitmax-gym',
-        tenant_type: 'GYM',
-        schema_name: 'tenant_fitmax_gym',
-        admin_email: 'admin@fitmax-gym.nexphys.com',
-        admin_password: 'admin123'
+        tenantType: 'GYM',
+        schemaName: 'tenant_fitmax_gym',
+        adminEmail: 'admin@fitmax-gym.nexphys.com',
+        adminPassword: 'admin123'
       },
       {
-        id: 'tenant-studio-001',
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'Zen Yoga Studio',
         domain: 'zen-yoga',
-        tenant_type: 'STUDIO',
-        schema_name: 'tenant_zen_yoga',
-        admin_email: 'admin@zen-yoga.nexphys.com',
-        admin_password: 'admin123'
+        tenantType: 'STUDIO',
+        schemaName: 'tenant_zen_yoga',
+        adminEmail: 'admin@zen-yoga.nexphys.com',
+        adminPassword: 'admin123'
       },
       {
-        id: 'tenant-pt-001',
+        id: '550e8400-e29b-41d4-a716-446655440002',
         name: 'Elite Personal Training',
         domain: 'elite-pt',
-        tenant_type: 'PERSONAL_TRAINER',
-        schema_name: 'tenant_elite_pt',
-        admin_email: 'admin@elite-pt.nexphys.com',
-        admin_password: 'admin123'
+        tenantType: 'PERSONAL_TRAINER',
+        schemaName: 'tenant_elite_pt',
+        adminEmail: 'admin@elite-pt.nexphys.com',
+        adminPassword: 'admin123'
       },
       {
-        id: 'tenant-ent-001',
+        id: '550e8400-e29b-41d4-a716-446655440003',
         name: 'TechCorp Wellness',
         domain: 'techcorp-wellness',
-        tenant_type: 'ENTERPRISE',
-        schema_name: 'tenant_techcorp_wellness',
-        admin_email: 'admin@techcorp-wellness.nexphys.com',
-        admin_password: 'admin123'
+        tenantType: 'ENTERPRISE',
+        schemaName: 'tenant_techcorp_wellness',
+        adminEmail: 'admin@techcorp-wellness.nexphys.com',
+        adminPassword: 'admin123'
       }
     ];
 
@@ -75,11 +75,11 @@ export class SeedAdminUsers1717517193824 implements MigrationInterface {
       
       await queryRunner.query(`
         INSERT INTO "public"."tenants" (
-          "id", "name", "domain", "tenant_type", "schema_name", "status", "trial_start_date", "trial_end_date", 
-          "is_schema_created", "created_at", "updated_at"
+          "id", "name", "domain", "tenantType", "schema_name", "status", "trialStartDate", "trialEndDate", 
+          "isSchemaCreated", "createdAt", "updatedAt"
         ) VALUES (
-          '${tenant.id}', '${tenant.name}', '${tenant.domain}', '${tenant.tenant_type}', 
-          '${tenant.schema_name}', '${TenantStatus.TRIAL}', NOW(), '${trialEndDate.toISOString()}', 
+          '${tenant.id}', '${tenant.name}', '${tenant.domain}', '${tenant.tenantType}', 
+          '${tenant.schemaName}', '${TenantStatus.TRIAL}', NOW(), '${trialEndDate.toISOString()}', 
           false, NOW(), NOW()
         ) ON CONFLICT ("domain") DO NOTHING;
       `);

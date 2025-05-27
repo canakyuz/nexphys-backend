@@ -1,5 +1,81 @@
 # Makefile'a ek komutlar
 
+##@ Docker Komutları
+docker-start: ## Docker container'ları başlat
+	docker-compose up -d
+	docker-compose ps
+
+
+docker-setup-all: ## Docker ortamında tam kurulum (migration ve seed işlemleri dahil)
+	@echo "🚀 Docker ortamında nexphys kurulumu başlatılıyor..."
+	docker-compose up -d
+	@echo "⏳ PostgreSQL'in hazır olması bekleniyor..."
+	@sleep 10
+	@echo "🔄 Public şema migrasyonları çalıştırılıyor..."
+	docker-compose exec api npm run migration:run:public
+	@echo "🌱 Admin kullanıcıları ve tenantlar ekleniyor..."
+	docker-compose exec api npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
+	@echo "🔄 Tenant şemaları oluşturuluyor..."
+	docker-compose exec api npm run migration:run:tenant
+	@echo "🌱 Tenant kullanıcıları ekleniyor..."
+	docker-compose exec api node scripts/seed-tenant-users.js
+	@echo "✅ Docker kurulumu tamamlandı!"
+
+
+docker-migrate-public: ## Docker içinde public şema migrasyonlarını çalıştır
+	docker-compose exec api npm run migration:run:public
+
+docker-seed-admin: ## Docker içinde admin kullanıcıları ve tenant'ları ekle
+	docker-compose exec api npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
+
+docker-migrate-tenant: ## Docker içinde tenant şemalarını oluştur
+	docker-compose exec api npm run migration:run:tenant
+
+docker-seed-tenant-users: ## Docker içinde tenant kullanıcılarını ekle
+	docker-compose exec api node scripts/seed-tenant-users.js
+
+docker-seed-specific-tenant: ## Docker içinde belirli bir tenant için kullanıcı ekle (TENANT=domain)
+	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make docker-seed-specific-tenant TENANT=fitmax-gym"; exit 1; fi
+	docker-compose exec api node scripts/seed-tenant-users.js $(TENANT)
+
+docker-db-status: ## Docker içinde veritabanı durumunu kontrol et
+	@echo "📊 Docker PostgreSQL Durumu:"
+	@echo "=========================="
+	docker-compose exec postgres pg_isready -U nexphys_user
+	@echo ""
+	@echo "Public Şema Tabloları:"
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "\dt public.*"
+	@echo ""
+	@echo "Tenant Şemaları:"
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+
+docker-tenant-schemas: ## Docker içinde tüm tenant şemalarını listele
+	@echo "🏢 Tenant Şemaları:"
+	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM public.tenants t ORDER BY t.created_at;"
+
+docker-test-api: ## Docker içinde API sağlık kontrolü
+	docker-compose exec api curl -s http://localhost:3000/health | jq .
+
+docker-test-tenants: ## Docker içinde tenant endpoint'lerini test et
+	docker-compose exec api curl -s http://localhost:3000/api/v1/tenants | jq .
+
+docker-test-auth: ## Docker içinde kimlik doğrulamayı test et (TENANT ve ROLE gerekli)
+	@if [ -z "$(TENANT)" ] || [ -z "$(ROLE)" ]; then echo "❌ TENANT ve ROLE gerekli. Kullanım: make docker-test-auth TENANT=fitmax-gym ROLE=owner"; exit 1; fi
+	docker-compose exec api curl -s -X POST http://localhost:3000/api/v1/auth/login \
+		-H "Content-Type: application/json" \
+		-H "X-Tenant-Domain: $(TENANT)" \
+		-d '{"email": "$(ROLE)@$(TENANT)", "password": "password123"}' | jq .
+
+docker-reset-all: ## Docker ortamını tamamen sıfırla (TÜM VERİLER SİLİNİR!)
+	@echo "⚠️  UYARI: Bu işlem TÜM verileri silecek!"
+	@read -p "Emin misiniz? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	docker-compose down -v
+	docker system prune -f
+	make docker-start
+	@sleep 10
+	make docker-setup-all
+
+
 ##@ Advanced Seeding
 seed-all: ## Seed all schemas (public + all tenants)
 	make seed-public-local && make seed-tenants-local
@@ -65,7 +141,7 @@ nexphys-prod-seed-tenant: ## Seed specific tenant in production (TENANT=domain) 
 
 ##@ Tenant Demo Setup
 demo-setup: ## Complete demo setup with all tenant types
-	@echo "🚀 Setting up NexFit multi-tenant demo..."
+	@echo "🚀 Setting up nexphys multi-tenant demo..."
 	make start
 	@sleep 10
 	make migrate-public-local
@@ -78,6 +154,7 @@ demo-setup: ## Complete demo setup with all tenant types
 	@echo "  • Zen Yoga Studio (STUDIO): zen-yoga" 
 	@echo "  • Elite Personal Training (PERSONAL_TRAINER): elite-pt"
 	@echo "  • TechCorp Wellness (ENTERPRISE): techcorp-wellness"
+	@echo "  • Test Tenant (TEST): test-tenant"
 	@echo ""
 	@echo "🌐 Test endpoints:"
 	@echo "  curl http://localhost:3000/api/v1/tenants"
@@ -117,22 +194,22 @@ test-nexphys-enterprise-auth: ## Test nexphys enterprise authentication
 		-H "X-Tenant-Domain: techcorp-wellness.nexphys.com" \
 		-d '{"email": "wellness@techcorp.nexphys.com", "password": "password123"}' | jq .
 
-##@ Database Status
+	##@ Database Status
 db-status: ## Show database and tenant status
 	@echo "📊 Database Status:"
 	@echo "=================="
 	@echo "PostgreSQL:"
-	@docker-compose exec postgres pg_isready -U nexfit_user
+	@docker-compose exec postgres pg_isready -U nexphys_user
 	@echo ""
 	@echo "Public Schema Tables:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "\dt public.*"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "\dt public.*"
 	@echo ""
 	@echo "Tenant Schemas:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
 
 tenant-schemas: ## List all tenant schemas
 	@echo "🏢 Tenant Schemas:"
-	@docker-compose exec postgres psql -U nexfit_user -d nexfit_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM tenants t ORDER BY t.created_at;"
+	@docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM tenants t ORDER BY t.created_at;"
 
 ##@ Development Helpers
 reset-all: ## Reset everything (DANGEROUS - deletes all data)
@@ -149,7 +226,7 @@ logs-tail: ## Tail all logs
 	docker-compose logs -f --tail=50
 
 status: ## Show full system status
-	@echo "🚀 NexFit System Status"
+	@echo "🚀 nexphys System Status"
 	@echo "======================"
 	@echo "Docker Services:"
 	@docker-compose ps
@@ -158,7 +235,14 @@ status: ## Show full system status
 	@curl -s http://localhost:3000/health | jq .status
 	@echo ""
 	@echo "Database:"
-	@docker-compose exec postgres pg_isready -U nexfit_user
+	@docker-compose exec postgres pg_isready -U nexphys_user
 	@echo ""
 	@echo "Tenant Count:"
 	@curl -s http://localhost:3000/api/v1/tenants | jq '.data | length'
+
+down:
+	docker-compose down -v
+
+
+install-bcrypt:
+	docker-compose exec api npm install bcrypt @types/bcrypt
