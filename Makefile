@@ -245,7 +245,7 @@ tenant-schemas: ## List all tenant schemas
 ##@ Development Helpers
 reset-all: ## Reset everything (DANGEROUS - deletes all data)
 	@echo "⚠️  WARNING: This will delete ALL data!"
-	@read -p "Are you sure? (y/N): " confirm && [ "$confirm" = "y" ] || exit 1
+	@read -p "Are you sure? (y/N): " confirm && [ "$confirm" = "y" || "$confirm" = "Y" || "$confirm" = "" ] || exit 1
 	docker-compose down -v
 	docker system prune -f
 	make start
