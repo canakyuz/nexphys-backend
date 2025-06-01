@@ -2,7 +2,7 @@
 
 ## 🌐 Base Information
 
-**Base URL**: `http://localhost:3000/api/v1`  
+**Base URL**: `http://localhost:4000/api/v1`  
 **Authentication**: Bearer Token + Tenant Context  
 **Content-Type**: `application/json`
 
@@ -410,24 +410,24 @@ GET /api/v1/users?sort=createdAt&order=desc
 ### cURL Examples
 ```bash
 # Create tenant
-curl -X POST http://localhost:3000/api/v1/tenants \
+curl -X POST http://localhost:4000/api/v1/tenants \
   -H "Content-Type: application/json" \
   -d '{"name": "Test Gym", "domain": "test-gym", "tenantType": "GYM", "contact": {"email": "admin@test.com"}}'
 
 # Register user
-curl -X POST http://localhost:3000/api/v1/auth/register \
+curl -X POST http://localhost:4000/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -H "X-Tenant-Domain: test-gym" \
   -d '{"firstName": "John", "lastName": "Doe", "email": "john@test.com", "password": "password123"}'
 
 # Login user
-curl -X POST http://localhost:3000/api/v1/auth/login \
+curl -X POST http://localhost:4000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -H "X-Tenant-Domain: test-gym" \
   -d '{"email": "john@test.com", "password": "password123"}'
 
 # Get profile (replace TOKEN)
-curl -X GET http://localhost:3000/api/v1/auth/profile \
+curl -X GET http://localhost:4000/api/v1/auth/profile \
   -H "Authorization: Bearer TOKEN" \
   -H "X-Tenant-Domain: test-gym"
 ```
@@ -436,7 +436,7 @@ curl -X GET http://localhost:3000/api/v1/auth/profile \
 ```javascript
 // API client setup
 const apiClient = {
-  baseURL: 'http://localhost:3000/api/v1',
+  baseURL: 'http://localhost:4000/api/v1',
   tenantDomain: 'my-fitness-gym',
   token: null,
 

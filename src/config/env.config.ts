@@ -14,7 +14,7 @@ if (result.error) {
 export const envConfig = {
   // Server
   NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: parseInt(process.env.PORT || '3000'),
+  PORT: parseInt(process.env.PORT || '4000'),
   API_PREFIX: process.env.API_PREFIX || '/api/v1',
 
   // Database
@@ -36,7 +36,7 @@ export const envConfig = {
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 
   // CORS
-  CORS_ORIGIN: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+  CORS_ORIGIN: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:4000'],
   CORS_CREDENTIALS: process.env.CORS_CREDENTIALS === 'true',
 
   // Rate Limiting

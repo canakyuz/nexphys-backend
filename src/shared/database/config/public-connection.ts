@@ -26,8 +26,8 @@ export const PublicDataSource = new DataSource({
   extra: {
     max: 20,
     min: 5,
-    acquireTimeoutMillis: 30000,
-    idleTimeoutMillis: 30000,
+    acquireTimeoutMillis: 40000,
+    idleTimeoutMillis: 40000,
     reapIntervalMillis: 1000,
   },
 
@@ -42,7 +42,7 @@ export const PublicDataSource = new DataSource({
 
   // Cache settings
   cache: envConfig.NODE_ENV === 'production' ? {
-    duration: 30000 // 30 seconds
+    duration: 40000 // 30 seconds
   } : false,
 });
 

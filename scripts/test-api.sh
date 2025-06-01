@@ -1,6 +1,6 @@
 #!/bin/bash
 
-API_URL="http://localhost:3000/api/v1"
+API_URL="http://localhost:4000/api/v1"
 
 echo "🧪 Testing nexphys Multi-Tenant API..."
 echo "================================="

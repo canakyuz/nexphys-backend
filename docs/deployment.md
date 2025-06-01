@@ -29,7 +29,7 @@ nano .env.production
 ```bash
 # .env.production
 NODE_ENV=production
-PORT=3000
+PORT=4000
 API_PREFIX=/api/v1
 
 # Database (Use managed database in production)
@@ -97,7 +97,7 @@ services:
       dockerfile: ./docker/Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
       - NODE_ENV=production
     env_file:
@@ -278,7 +278,7 @@ resource "aws_s3_bucket" "nexphys_uploads" {
       "image": "ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/nexphys-backend:latest",
       "portMappings": [
         {
-          "containerPort": 3000,
+          "containerPort": 4000,
           "protocol": "tcp"
         }
       ],
@@ -289,7 +289,7 @@ resource "aws_s3_bucket" "nexphys_uploads" {
         },
         {
           "name": "PORT",
-          "value": "3000"
+          "value": "4000"
         }
       ],
       "secrets": [
@@ -311,7 +311,7 @@ resource "aws_s3_bucket" "nexphys_uploads" {
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3
@@ -438,7 +438,7 @@ TargetGroup:
   Type: AWS::ElasticLoadBalancingV2::TargetGroup
   Properties:
     Name: nexphys-api-targets
-    Port: 3000
+    Port: 4000
     Protocol: HTTP
     VpcId: !Ref VPC
     TargetType: ip
@@ -493,8 +493,8 @@ ECSSecurityGroup:
     VpcId: !Ref VPC
     SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: 3000
-        ToPort: 3000
+        FromPort: 4000
+        ToPort: 4000
         SourceSecurityGroupId: !Ref ALBSecurityGroup
 ```
 

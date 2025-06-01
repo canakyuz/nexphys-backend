@@ -282,7 +282,7 @@ enum RoleLevel {
 const connectionConfig = {
   max: 20,          // Max connections per tenant
   min: 2,           // Min connections to maintain
-  idle: 30000,      // Close idle connections after 30s
+  idle: 40000,      // Close idle connections after 30s
   acquire: 60000,   // Max time to acquire connection
   evict: 1000,      // Check for idle connections every 1s
 };

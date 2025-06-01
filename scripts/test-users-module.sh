@@ -2,7 +2,7 @@
 
 # Test Users Module API
 
-API_URL="http://localhost:3000/api/v1"
+API_URL="http://localhost:4000/api/v1"
 TENANT_DOMAIN="fitmax-gym"  # Existing tenant from seeded data
 
 echo "🧪 Testing Users Module API..."

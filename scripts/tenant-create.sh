@@ -22,7 +22,7 @@ echo "🏷️  Type: $TYPE"
 echo "📧 Email: $EMAIL"
 
 # Create tenant via API
-curl -X POST http://localhost:3000/api/v1/tenants \
+curl -X POST http://localhost:4000/api/v1/tenants \
   -H "Content-Type: application/json" \
   -d "{
     \"name\": \"$NAME\",

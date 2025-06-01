@@ -17,7 +17,7 @@ chmod +x scripts/setup.sh
 make dev
 ```
 
-**API Available at**: `http://localhost:3000/api/v1`
+**API Available at**: `http://localhost:4000/api/v1`
 
 ## 🏗️ Architecture
 
@@ -262,7 +262,7 @@ PUT    /api/v1/users/:id/role       # Change user role
 ./scripts/tenant-create.sh test-gym "Test Gym" GYM admin@test-gym.com
 
 # Or using API
-curl -X POST http://localhost:3000/api/v1/tenants \
+curl -X POST http://localhost:4000/api/v1/tenants \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test Gym",
@@ -323,7 +323,7 @@ TENANT_TRIAL_DAYS=30
 ### Optional Variables
 ```bash
 # Server
-PORT=3000
+PORT=4000
 API_PREFIX=/api/v1
 
 # Features

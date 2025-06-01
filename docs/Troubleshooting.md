@@ -212,13 +212,13 @@ Error: Tenant not found: my-gym
 **Quick Fix:**
 ```bash
 # Check if tenant exists
-curl -X GET http://localhost:3000/api/v1/tenants | jq '.data[] | .domain'
+curl -X GET http://localhost:4000/api/v1/tenants | jq '.data[] | .domain'
 
 # Create tenant if missing
 ./scripts/tenant-create.sh my-gym "My Gym"
 
 # Or via API
-curl -X POST http://localhost:3000/api/v1/tenants \
+curl -X POST http://localhost:4000/api/v1/tenants \
   -H "Content-Type: application/json" \
   -d '{"name": "My Gym", "domain": "my-gym", "tenantType": "GYM", "contact": {"email": "admin@my-gym.com"}}'
 ```
@@ -233,7 +233,7 @@ Access to fetch blocked by CORS policy
 **Quick Fix:**
 ```bash
 # Update CORS origins in .env.development
-CORS_ORIGIN=http://localhost:3000,http://localhost:19006,http://localhost:8081
+CORS_ORIGIN=http://localhost:4000,http://localhost:19006,http://localhost:8081
 
 # For development, temporarily allow all
 CORS_ORIGIN=*
@@ -244,16 +244,16 @@ npm run dev
 
 #### ❌ Port Already in Use
 ```bash
-Error: listen EADDRINUSE :::3000
+Error: listen EADDRINUSE :::4000
 ```
 
 **Quick Fix:**
 ```bash
-# Find process using port 3000
-lsof -ti:3000
+# Find process using port 4000
+lsof -ti:4000
 
 # Kill the process
-kill -9 $(lsof -ti:3000)
+kill -9 $(lsof -ti:4000)
 
 # Or use different port
 PORT=3001 npm run dev
@@ -264,10 +264,10 @@ PORT=3001 npm run dev
 ### Health Check
 ```bash
 # Basic health check
-curl http://localhost:3000/health
+curl http://localhost:4000/health
 
 # Detailed health with JSON formatting
-curl -s http://localhost:3000/health | jq .
+curl -s http://localhost:4000/health | jq .
 ```
 
 ### Database Diagnostics
@@ -553,7 +553,7 @@ echo "Debug logs collected in: $(pwd)"
 2. **What's your environment?** Check `NODE_ENV` value
 3. **Any recent changes?** Check git log: `git log --oneline -10`
 4. **Error reproducible?** Try with fresh database/containers
-5. **Network issues?** Test health endpoint: `curl http://localhost:3000/health`
+5. **Network issues?** Test health endpoint: `curl http://localhost:4000/health`
 
 ---
 

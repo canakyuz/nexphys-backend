@@ -54,14 +54,14 @@ docker-tenant-schemas: ## Docker içinde tüm tenant şemalarını listele
 	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT t.name, t.domain, t.tenant_type, t.schema_name, t.is_schema_created FROM public.tenants t ORDER BY t.created_at;"
 
 docker-test-api: ## Docker içinde API sağlık kontrolü
-	docker-compose exec api curl -s http://localhost:3000/health | jq .
+	docker-compose exec api curl -s http://localhost:4000/health | jq .
 
 docker-test-tenants: ## Docker içinde tenant endpoint'lerini test et
-	docker-compose exec api curl -s http://localhost:3000/api/v1/tenants | jq .
+	docker-compose exec api curl -s http://localhost:4000/api/v1/tenants | jq .
 
 docker-test-auth: ## Docker içinde kimlik doğrulamayı test et (TENANT ve ROLE gerekli)
 	@if [ -z "$(TENANT)" ] || [ -z "$(ROLE)" ]; then echo "❌ TENANT ve ROLE gerekli. Kullanım: make docker-test-auth TENANT=fitmax-gym ROLE=owner"; exit 1; fi
-	docker-compose exec api curl -s -X POST http://localhost:3000/api/v1/auth/login \
+	docker-compose exec api curl -s -X POST http://localhost:4000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
 		-H "X-Tenant-Domain: $(TENANT)" \
 		-d '{"email": "$(ROLE)@$(TENANT)", "password": "password123"}' | jq .
@@ -196,39 +196,39 @@ reset-tenant: ## Reset a specific tenant schema (TENANT=schema_name)
 	@echo "  • Test Tenant (TEST): test-tenant"
 	@echo ""
 	@echo "🌐 Test endpoints:"
-	@echo "  curl http://localhost:3000/api/v1/tenants"
-	@echo "  curl -H 'X-Tenant-Domain: fitmax-gym' http://localhost:3000/api/v1/auth/login"
+	@echo "  curl http://localhost:4000/api/v1/tenants"
+	@echo "  curl -H 'X-Tenant-Domain: fitmax-gym' http://localhost:4000/api/v1/auth/login"
 
 ##@ Quick Tests
 test-tenants: ## Test all tenant endpoints
 	@echo "🧪 Testing tenant endpoints..."
-	@curl -s http://localhost:3000/api/v1/tenants | jq .
+	@curl -s http://localhost:4000/api/v1/tenants | jq .
 	@echo "\n"
 
 test-nexphys-gym-auth: ## Test nexphys gym authentication
 	@echo "🧪 Testing nexphys gym authentication..."
-	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
+	@curl -s -X POST http://localhost:4000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
 		-H "X-Tenant-Domain: fitmax-gym.nexphys.com" \
 		-d '{"email": "owner@fitmax-gym.nexphys.com", "password": "password123"}' | jq .
 
 test-nexphys-studio-auth: ## Test nexphys studio authentication  
 	@echo "🧪 Testing nexphys studio authentication..."
-	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
+	@curl -s -X POST http://localhost:4000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
 		-H "X-Tenant-Domain: zen-yoga.nexphys.com" \
 		-d '{"email": "instructor@zen-yoga.nexphys.com", "password": "password123"}' | jq .
 
 test-nexphys-pt-auth: ## Test nexphys personal trainer authentication
 	@echo "🧪 Testing nexphys personal trainer authentication..."
-	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
+	@curl -s -X POST http://localhost:4000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
 		-H "X-Tenant-Domain: elite-pt.nexphys.com" \
 		-d '{"email": "coach@elite-pt.nexphys.com", "password": "password123"}' | jq .
 
 test-nexphys-enterprise-auth: ## Test nexphys enterprise authentication
 	@echo "🧪 Testing nexphys enterprise authentication..."
-	@curl -s -X POST http://localhost:3000/api/v1/auth/login \
+	@curl -s -X POST http://localhost:4000/api/v1/auth/login \
 		-H "Content-Type: application/json" \
 		-H "X-Tenant-Domain: techcorp-wellness.nexphys.com" \
 		-d '{"email": "wellness@techcorp.nexphys.com", "password": "password123"}' | jq .
@@ -271,13 +271,13 @@ status: ## Show full system status
 	@docker-compose ps
 	@echo ""
 	@echo "API Health:"
-	@curl -s http://localhost:3000/health | jq .status
+	@curl -s http://localhost:4000/health | jq .status
 	@echo ""
 	@echo "Database:"
 	@docker-compose exec postgres pg_isready -U nexphys_user
 	@echo ""
 	@echo "Tenant Count:"
-	@curl -s http://localhost:3000/api/v1/tenants | jq '.data | length'
+	@curl -s http://localhost:4000/api/v1/tenants | jq '.data | length'
 
 down:
 	docker-compose down -v

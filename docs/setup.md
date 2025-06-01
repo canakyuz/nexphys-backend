@@ -21,7 +21,7 @@ chmod +x scripts/setup.sh
 make dev
 ```
 
-**That's it!** API will be running at `http://localhost:3000/api/v1`
+**That's it!** API will be running at `http://localhost:4000/api/v1`
 
 ## 🔧 Manual Setup
 
@@ -75,7 +75,7 @@ npm run dev
 
 ### 1. Health Check
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:4000/health
 ```
 
 **Expected response:**
@@ -198,11 +198,11 @@ npm run migration:run:public
 
 ### Port Already in Use
 ```bash
-# Find process using port 3000
-lsof -ti:3000
+# Find process using port 4000
+lsof -ti:4000
 
 # Kill the process
-kill -9 $(lsof -ti:3000)
+kill -9 $(lsof -ti:4000)
 
 # Or use different port
 PORT=3001 npm run dev

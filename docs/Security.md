@@ -277,8 +277,8 @@ const dataSource = new DataSource({
   } : false,
   extra: {
     max: 20,
-    connectionTimeoutMillis: 30000,
-    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 40000,
+    idleTimeoutMillis: 40000,
   }
 });
 ```

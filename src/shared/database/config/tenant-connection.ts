@@ -30,8 +30,8 @@ export const createTenantDataSource = (schemaName: string): DataSource => {
     extra: {
       max: 10,
       min: 2,
-      acquireTimeoutMillis: 30000,
-      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 40000,
+      idleTimeoutMillis: 40000,
       reapIntervalMillis: 1000,
     },
 
