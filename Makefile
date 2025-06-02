@@ -97,12 +97,11 @@ migrate-tenant-local: ## Run tenant schema migrations locally
 	docker-compose exec api npm run migration:run:tenant
 
 nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant types
-	@echo "🚀 Setting up Nexphys.com multi-tenant development environment..."
+	@echo "🚀 Setting up Nexphys.com multi-tenant development environment with correct tenant-per-schema architecture..."
 	make start
 	@sleep 10
-	make migrate-public-local
-	make seed-public-nexphys
-	make seed-tenants-nexphys
+	@echo "🔧 Creating all tenant schemas, tables, and populating with users for each role type..."
+	docker-compose exec api npm run setup:nexphys-env
 	@echo "✅ Nexphys.com development setup complete!"
 	@echo ""
 	@echo "🏢 Available Nexphys.com Tenants:"
@@ -111,13 +110,13 @@ nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant typ
 	@echo "  • Elite Personal Training (PERSONAL_TRAINER): elite-pt.nexphys.com"
 	@echo "  • TechCorp Wellness (ENTERPRISE): techcorp-wellness.nexphys.com"
 	@echo ""
-	@echo "👤 Available Roles and Users:"
+	@echo "👤 Available Roles and Users by Tenant Type:"
 	@echo "  • Superadmin: superadmin@nexphys.com / superadmin123"
 	@echo "  • Tenant Admin: admin@nexphys.com / admin123"
-	@echo "  • GYM: owner@fitmax-gym.nexphys.com, coach@fitmax-gym.nexphys.com, member@fitmax-gym.nexphys.com / password123"
-	@echo "  • STUDIO: owner@zen-yoga.nexphys.com, instructor@zen-yoga.nexphys.com, student@zen-yoga.nexphys.com / password123"
-	@echo "  • PT: coach@elite-pt.nexphys.com, client@elite-pt.nexphys.com / password123"
-	@echo "  • ENTERPRISE: wellness@techcorp.nexphys.com, coach@techcorp.nexphys.com, employee@techcorp.nexphys.com / password123"
+	@echo "  • GYM: owner@fitmax-gym / password123, manager@fitmax-gym / password123, coach@fitmax-gym / password123, member@fitmax-gym / password123"
+	@echo "  • STUDIO: owner@zen-yoga / password123, manager@zen-yoga / password123, instructor@zen-yoga / password123, student@zen-yoga / password123"
+	@echo "  • PT: coach@elite-pt / password123, client@elite-pt / password123"
+	@echo "  • ENTERPRISE: wellness@techcorp-wellness / password123, coach@techcorp-wellness / password123, employee@techcorp-wellness / password123"
 
 seed-public-nexphys: ## Seed public schema with nexphys.com data
 	@echo "🌱 Seeding public schema with nexphys.com data..."

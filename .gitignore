@@ -343,5 +343,5 @@ web-build/
 # !Dockerfile
 # !README.md
 # !package.json
-
+logs
 user.sh

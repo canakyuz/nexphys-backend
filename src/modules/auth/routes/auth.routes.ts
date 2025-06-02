@@ -5,17 +5,24 @@ import { tenantMiddleware } from '@/modules/tenants/middlewares/tenant.middlewar
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { envConfig } from '@/config/env.config';
 
 const router = Router();
 const authController = new AuthController();
 
-// Public routes (require tenant)
-router.post('/register', tenantMiddleware, validationMiddleware(RegisterDto), authController.register);
-router.post('/login', tenantMiddleware, validationMiddleware(LoginDto), authController.login);
-router.post('/refresh', authController.refreshToken);
+//================================================
+// Routes
+//================================================
 
-// Protected routes
-router.get('/profile', tenantMiddleware, authMiddleware, authController.getProfile);
-router.post('/logout', authMiddleware, authController.logout);
+// Auth rotaları düzeltildi - envConfig.API_PREFIX server.ts'de ekleniyor
+router.post(`/register`, tenantMiddleware, validationMiddleware(RegisterDto), authController.register);
+router.post(`/login`, tenantMiddleware, validationMiddleware(LoginDto), authController.login);
+router.post(`/refresh`, authController.refreshToken);
+router.get(`/profile`, tenantMiddleware, authMiddleware, authController.getProfile);
+router.post(`/logout`, authMiddleware, authController.logout);
+
+//================================================
+// Export
+//================================================
 
 export { router as authRoutes };

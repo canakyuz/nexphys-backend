@@ -14,10 +14,7 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY package*.json ./
 
 # Install ALL dependencies (including dev dependencies for development)
-RUN npm ci
-
-# Install modules
-RUN npm install
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -36,5 +33,8 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:4000/health || exit 1
 
-# Start application
-CMD ["npm", "run", "dev"]
+# Make start script executable
+RUN chmod +x /app/docker/start.sh
+
+# Start application using our improved startup script
+CMD ["/app/docker/start.sh"]

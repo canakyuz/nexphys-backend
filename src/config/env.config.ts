@@ -11,6 +11,7 @@ if (result.error) {
   config(); // Fallback to default .env
 }
 
+
 export const envConfig = {
   // Server
   NODE_ENV: process.env.NODE_ENV || 'development',

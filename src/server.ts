@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
+import { generateSwaggerSpec } from '@/shared/utils/swagger.util';
 
 import { envConfig } from '@/config/env.config';
 import { corsMiddleware } from '@/shared/middlewares/cors.middleware';
@@ -12,6 +14,7 @@ import { errorHandler, notFoundHandler } from '@/shared/middlewares/error.middle
 import { logger } from '@/shared/utils/logger.util';
 import { PublicDataSource, closePublicConnection, closeAllTenantConnections } from '@/shared/database/config';
 import { ResponseUtil } from '@/shared/utils/response.util';
+import { RouteUtil } from '@/shared/utils/route.util';
 
 // Routes
 import { tenantRoutes } from '@/modules/tenants/routes/tenant.routes';
@@ -84,6 +87,15 @@ class Server {
   }
 
   private initializeRoutes() {
+    // Swagger API Documentation
+    try {
+      const swaggerSpec = generateSwaggerSpec();
+      this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+      logger.info('✅ Swagger documentation loaded successfully');
+    } catch (error) {
+      logger.error('❌ Failed to load Swagger documentation:', error);
+    }
+
     // Health check
     this.app.get('/health', async (req, res) => {
       const dbStatus = PublicDataSource.isInitialized ? 'connected' : 'disconnected';
@@ -113,11 +125,11 @@ class Server {
       }, 'nexphys API is running');
     });
 
-    // API routes
-    this.app.use(`${envConfig.API_PREFIX}/tenants`, tenantRoutes);
-    this.app.use(`${envConfig.API_PREFIX}/auth`, authRoutes);
-    this.app.use(`${envConfig.API_PREFIX}/users`, userRoutes);
-    this.app.use(`${envConfig.API_PREFIX}/roles`, roleRoutes);
+    // API routes - RouteUtil kullanarak standardize edildi
+    this.app.use(RouteUtil.getModuleRoute('tenants'), tenantRoutes);
+    this.app.use(RouteUtil.getModuleRoute('auth'), authRoutes);
+    this.app.use(RouteUtil.getModuleRoute('users'), userRoutes);
+    this.app.use(RouteUtil.getModuleRoute('roles'), roleRoutes);
   }
 
   private initializeErrorHandling() {
@@ -134,6 +146,7 @@ class Server {
       logger.info(`🌐 API URL: http://localhost:${envConfig.PORT}${envConfig.API_PREFIX}`);
       logger.info(`📊 Database: ${envConfig.DB_HOST}:${envConfig.DB_PORT}/${envConfig.DB_NAME}`);
       logger.info(`🔍 Health Check: http://localhost:${envConfig.PORT}/health`);
+      logger.info(`📚 API Documentation: http://localhost:${envConfig.PORT}/api-docs`);
       logger.info('🚀 ================================');
     });
   }
