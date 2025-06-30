@@ -344,4 +344,6 @@ web-build/
 # !README.md
 # !package.json
 logs
-user.sh
+user.sh# Log files
+logs/
+*.log

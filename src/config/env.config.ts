@@ -7,7 +7,7 @@ const envFile = process.env.ENV_FILE || '.env';
 const result = config({ path: path.resolve(process.cwd(), envFile) });
 
 if (result.error) {
-  console.warn(`Warning: Could not load ${envFile}, falling back to default .env`);
+  // Could not load env file, falling back to default .env
   config(); // Fallback to default .env
 }
 

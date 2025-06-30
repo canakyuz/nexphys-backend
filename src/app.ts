@@ -43,8 +43,6 @@ export const createApp = (): express.Application => {
     } catch (error) {
       // Hata durumunda mevcut swaggerSpec'i kullan
       app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-      
-      console.warn('Otomatik Swagger yapılandırması yüklenemedi, manuel yapılandırma kullanılıyor:', error);
     }
     
     // Expose swagger.json

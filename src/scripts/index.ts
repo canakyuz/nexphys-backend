@@ -64,10 +64,10 @@ function showHelp() {
   Logger.logListItem('help: Bu yardım bilgisini göster');
   
   Logger.logInfo('\nÖrnekler:');
-  console.log('  npm run script -- setup-dev');
-  console.log('  npm run script -- create-tenant');
-  console.log('  npm run script -- create-schema');
-  console.log('  npm run script -- setup-roles');
+  Logger.logInfo('  npm run script -- setup-dev');
+  Logger.logInfo('  npm run script -- create-tenant');
+  Logger.logInfo('  npm run script -- create-schema');
+  Logger.logInfo('  npm run script -- setup-roles');
 }
 
 // Geliştirme ortamını hazırla

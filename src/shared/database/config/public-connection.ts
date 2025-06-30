@@ -51,10 +51,9 @@ export const initializePublicConnection = async (): Promise<void> => {
   try {
     if (!PublicDataSource.isInitialized) {
       await PublicDataSource.initialize();
-      console.log('✅ Public database connection established');
     }
   } catch (error) {
-    console.error('❌ Public database connection failed:', error);
+    // Public database connection failed
     throw error;
   }
 };
@@ -64,10 +63,9 @@ export const closePublicConnection = async (): Promise<void> => {
   try {
     if (PublicDataSource.isInitialized) {
       await PublicDataSource.destroy();
-      console.log('✅ Public database connection closed');
     }
   } catch (error) {
-    console.error('❌ Error closing public database connection:', error);
+    // Error closing public database connection
     throw error;
   }
 };

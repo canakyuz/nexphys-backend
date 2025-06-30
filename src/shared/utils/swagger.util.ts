@@ -45,10 +45,9 @@ export const generateSwaggerFile = async (outputPath: string): Promise<void> => 
   
   try {
     fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2));
-    console.log(`✅ Swagger documentation generated successfully at: ${outputPath}`);
+    // Swagger documentation generated successfully
     return Promise.resolve();
   } catch (error) {
-    console.error('❌ Error generating Swagger documentation:', error);
     return Promise.reject(error);
   }
 };

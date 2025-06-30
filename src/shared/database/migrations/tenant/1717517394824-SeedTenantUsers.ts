@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { TenantStatus } from '@/shared/database/entities/public/tenant.entity';
 import { UserStatus } from '@/shared/database/entities/tenant/user.entity';
 
@@ -13,12 +13,12 @@ export class SeedTenantUsers1717517394824 implements MigrationInterface {
     `);
     
     if (!schemaInfoResult || schemaInfoResult.length === 0) {
-      console.error('Could not determine tenant type for schema: ' + await queryRunner.query('SELECT current_schema()'));
+      // Could not determine tenant type for schema
       return;
     }
     
     const tenantType = schemaInfoResult[0].tenant_type;
-    console.log(`Seeding users for ${tenantType} tenant in schema: ${await queryRunner.query('SELECT current_schema()')}`);
+    // Seeding users for tenant
 
     // Create admin user and associated role
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
