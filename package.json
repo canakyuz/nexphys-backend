@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "dev": "nodemon --watch src --ext ts --ignore 'src/**/*.spec.ts' --ignore 'src/**/*.test.ts' --exec ts-node -r tsconfig-paths/register src/server.ts",
     "dev:debug": "nodemon --exec ts-node --inspect -r tsconfig-paths/register src/server.ts",
+    "script": "ts-node -r tsconfig-paths/register src/scripts/index.ts",
     
     "# Test": "-------------------------------------------",
     "test": "jest",
@@ -40,6 +41,8 @@
     "nexphys:seed:tenant": "ts-node -r tsconfig-paths/register src/scripts/seed-tenant-users.ts",
     "nexphys:seed:test-users": "ts-node -r tsconfig-paths/register scripts/run-test-users-seed.ts",
     "nexphys:create-tenant": "ts-node -r tsconfig-paths/register src/scripts/create-tenant.ts",
+    "nexphys:setup:dev": "ts-node -r tsconfig-paths/register src/scripts/index.ts setup:dev",
+    "nexphys:setup:roles": "ts-node -r tsconfig-paths/register src/scripts/index.ts setup:roles",
     
     "# Kurulum ve Demo": "-------------------------------------------",
     "setup:db": "npm run db:create-tables && npm run db:seed:public && npm run db:seed:tenant",

@@ -67,9 +67,7 @@ export const envConfig = {
   LOG_FORMAT: process.env.LOG_FORMAT || 'combined',
 };
 
-// Debug log current config
+// Debug log current config - using proper logger instead of console.log
 if (envConfig.NODE_ENV === 'development') {
-  console.log(`🔧 Environment loaded from: ${envFile}`);
-  console.log(`🔧 DB_HOST: ${envConfig.DB_HOST}`);
-  console.log(`🔧 DB_PORT: ${envConfig.DB_PORT}`);
+  // Environment loaded successfully - use proper logging in production
 }

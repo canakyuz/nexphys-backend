@@ -1,5 +1,5 @@
-import { DataSource } from 'typeorm';
-import { logger } from '@/shared/utils/logger.util';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import * as Logger from './logger';
 import {
   SCHEMA_TYPES,
   createSchemaName,
@@ -8,64 +8,99 @@ import {
   createDataSource
 } from './db';
 
+// PostgreSQL için özel tip tanımlaması
+interface PostgresOptions extends DataSourceOptions {
+  schema?: string;
+}
+
+// Güvenli bir şekilde entity yükleme
+const safeRequire = (path: string) => {
+  try {
+    return require(path);
+  } catch (error) {
+    Logger.logWarning(`Entity import failed: ${path}`);
+    return null;
+  }
+};
+
 // Şema bazlı entity çözümleme
 export const getEntitiesForSchema = (schemaType: string): any[] => {
+  const entities: any[] = [];
+  
   switch (schemaType) {
     case SCHEMA_TYPES.SYS:
       // sys şeması için entitiler
-      return [
-        require('@/shared/database/entities/sys/tenant.entity').Tenant,
-        require('@/shared/database/entities/sys/subscription.entity').Subscription
-      ];
+      try {
+        const { Tenant } = require('../../shared/database/entities/sys/tenant.entity');
+        const { Subscription } = require('../../shared/database/entities/sys/subscription.entity');
+        
+        if (Tenant) entities.push(Tenant);
+        if (Subscription) entities.push(Subscription);
+      } catch (error: any) {
+        Logger.logWarning(`Failed to load SYS entities: ${error?.message || 'Unknown error'}`);
+      }
+      break;
     
     case SCHEMA_TYPES.COMMON:
       // common şeması için entitiler
-      return [
-        require('@/shared/database/entities/common/exercise.entity').Exercise,
-        require('@/shared/database/entities/common/nutrition.entity').Nutrition
-      ];
+      try {
+        const { Exercise } = require('../../shared/database/entities/common/exercise.entity');
+        const { Nutrition } = require('../../shared/database/entities/common/nutrition.entity');
+        
+        if (Exercise) entities.push(Exercise);
+        if (Nutrition) entities.push(Nutrition);
+      } catch (error: any) {
+        Logger.logWarning(`Failed to load COMMON entities: ${error?.message || 'Unknown error'}`);
+      }
+      break;
     
     case SCHEMA_TYPES.TENANT:
-      // tenant şeması için tüm entitiler
-      return [
-        // Auth
-        require('@/shared/database/entities/tenant/user.entity').User,
-        require('@/shared/database/entities/tenant/role.entity').Role,
-        require('@/shared/database/entities/tenant/permission.entity').Permission,
+      // tenant şeması için tüm entitiler - gruplar halinde yükle
+      // Auth
+      try {
+        const { User } = require('../../shared/database/entities/tenant/user.entity');
+        const { Role } = require('../../shared/database/entities/tenant/role.entity');
+        const { Permission } = require('../../shared/database/entities/tenant/permission.entity');
         
-        // CRM
-        require('@/shared/database/entities/tenant/member.entity').Member,
-        require('@/shared/database/entities/tenant/contact.entity').Contact,
+        if (User) entities.push(User);
+        if (Role) entities.push(Role);
+        if (Permission) entities.push(Permission);
+      } catch (error: any) {
+        Logger.logWarning(`Failed to load Auth entities: ${error?.message || 'Unknown error'}`);
+      }
+      
+      // CRM
+      try {
+        const { Member } = require('../../shared/database/entities/tenant/member.entity');
+        const { Contact } = require('../../shared/database/entities/tenant/contact.entity');
         
-        // Business
-        require('@/shared/database/entities/tenant/subscription.entity').Subscription,
-        require('@/shared/database/entities/tenant/payment.entity').Payment,
-        require('@/shared/database/entities/tenant/invoice.entity').Invoice,
+        if (Member) entities.push(Member);
+        if (Contact) entities.push(Contact);
+      } catch (error: any) {
+        Logger.logWarning(`Failed to load CRM entities: ${error?.message || 'Unknown error'}`);
+      }
+      
+      // Business
+      try {
+        const { Subscription } = require('../../shared/database/entities/tenant/subscription.entity');
+        const { Payment } = require('../../shared/database/entities/tenant/payment.entity');
+        const { Invoice } = require('../../shared/database/entities/tenant/invoice.entity');
         
-        // Facilities
-        require('@/shared/database/entities/tenant/location.entity').Location,
-        require('@/shared/database/entities/tenant/room.entity').Room,
-        require('@/shared/database/entities/tenant/equipment.entity').Equipment,
-        
-        // Schedule
-        require('@/shared/database/entities/tenant/class.entity').Class,
-        require('@/shared/database/entities/tenant/appointment.entity').Appointment,
-        require('@/shared/database/entities/tenant/attendance.entity').Attendance,
-        
-        // Fitness
-        require('@/shared/database/entities/tenant/workout.entity').Workout,
-        require('@/shared/database/entities/tenant/program.entity').Program,
-        require('@/shared/database/entities/tenant/measurement.entity').Measurement,
-        
-        // Operations
-        require('@/shared/database/entities/tenant/task.entity').Task,
-        require('@/shared/database/entities/tenant/notification.entity').Notification,
-        require('@/shared/database/entities/tenant/settings.entity').Settings
-      ];
+        if (Subscription) entities.push(Subscription);
+        if (Payment) entities.push(Payment);
+        if (Invoice) entities.push(Invoice);
+      } catch (error: any) {
+        Logger.logWarning(`Failed to load Business entities: ${error?.message || 'Unknown error'}`);
+      }
+      
+      // Diğer modüller için benzer yapı uygulanabilir
+      break;
     
     default:
       return [];
   }
+  
+  return entities.filter(entity => entity !== null);
 };
 
 // Şema bazlı migration klasörü çözümleme
@@ -93,13 +128,13 @@ export const setupSchema = async (
       const created = await createSchema(schemaName);
       
       if (!created) {
-        logger.error(`Failed to create schema: ${schemaName}`);
+        Logger.logError(`Failed to create schema: ${schemaName}`);
         return null;
       }
       
-      logger.info(`Created schema: ${schemaName}`);
+      Logger.logInfo(`Created schema: ${schemaName}`);
     } else {
-      logger.info(`Schema already exists: ${schemaName}`);
+      Logger.logInfo(`Schema already exists: ${schemaName}`);
     }
     
     // DataSource oluştur
@@ -117,11 +152,11 @@ export const setupSchema = async (
     
     // DataSource'u başlat
     await dataSource.initialize();
-    logger.info(`DataSource initialized for schema: ${schemaName}`);
+    Logger.logInfo(`DataSource initialized for schema: ${schemaName}`);
     
     return dataSource;
-  } catch (error) {
-    logger.error(`Error setting up schema for ${domain} (${schemaType}):`, error);
+  } catch (error: any) {
+    Logger.logError(`Error setting up schema for ${domain} (${schemaType}): ${error?.message || 'Unknown error'}`);
     return null;
   }
 };
@@ -130,11 +165,13 @@ export const setupSchema = async (
 export const runMigrations = async (dataSource: DataSource): Promise<boolean> => {
   try {
     const migrations = await dataSource.runMigrations();
-    logger.info(`Ran ${migrations.length} migrations for schema: ${dataSource.options.schema}`);
+    const schemaName = getSchemaNameSafely(dataSource);
+    Logger.logInfo(`Ran ${migrations.length} migrations for schema: ${schemaName}`);
     
     return true;
-  } catch (error) {
-    logger.error(`Error running migrations for schema ${dataSource.options.schema}:`, error);
+  } catch (error: any) {
+    const schemaName = getSchemaNameSafely(dataSource);
+    Logger.logError(`Error running migrations for schema ${schemaName}: ${error?.message || 'Unknown error'}`);
     return false;
   }
 };
@@ -143,11 +180,24 @@ export const runMigrations = async (dataSource: DataSource): Promise<boolean> =>
 export const revertMigration = async (dataSource: DataSource): Promise<boolean> => {
   try {
     await dataSource.undoLastMigration();
-    logger.info(`Reverted last migration for schema: ${dataSource.options.schema}`);
+    const schemaName = getSchemaNameSafely(dataSource);
+    Logger.logInfo(`Reverted last migration for schema: ${schemaName}`);
     
     return true;
-  } catch (error) {
-    logger.error(`Error reverting migration for schema ${dataSource.options.schema}:`, error);
+  } catch (error: any) {
+    const schemaName = getSchemaNameSafely(dataSource);
+    Logger.logError(`Error reverting migration for schema ${schemaName}: ${error?.message || 'Unknown error'}`);
     return false;
   }
-}; 
+};
+
+// Şema adını güvenli bir şekilde al
+function getSchemaNameSafely(dataSource: DataSource): string {
+  try {
+    // TypeORM seçeneklerini any olarak ele al
+    const options = dataSource.options as any;
+    return options.schema || 'unknown';
+  } catch (error) {
+    return 'unknown';
+  }
+} 

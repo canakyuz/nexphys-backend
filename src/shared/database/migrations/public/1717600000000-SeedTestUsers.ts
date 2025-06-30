@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { TenantStatus } from '@/shared/database/entities/public/tenant.entity';
 
 export class SeedTestUsers1717600000000 implements MigrationInterface {

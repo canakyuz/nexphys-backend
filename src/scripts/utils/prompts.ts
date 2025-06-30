@@ -1,5 +1,5 @@
 import * as readline from 'readline';
-import { logger } from '@/shared/utils/logger.util';
+import * as Logger from './logger';
 
 // Soru sorma yardımcısı
 export const askQuestion = (question: string): Promise<string> => {
@@ -16,6 +16,19 @@ export const askQuestion = (question: string): Promise<string> => {
   });
 };
 
+// Genel girdi alıcı
+export const askInput = async (prompt: string, required = true): Promise<string> => {
+  let input = await askQuestion(prompt);
+  input = input.trim();
+  
+  if (required && !input) {
+    Logger.logError('This field is required');
+    return askInput(prompt, required);
+  }
+  
+  return input;
+};
+
 // Evet/hayır sorusu
 export const askConfirmation = async (question: string): Promise<boolean> => {
   const answer = await askQuestion(`${question} (y/n)`);
@@ -28,17 +41,17 @@ export const askSelection = async <T>(
   options: T[],
   displayFn: (item: T) => string
 ): Promise<T | null> => {
-  logger.info(question);
+  Logger.logInfo(question);
   
   options.forEach((item, index) => {
-    logger.info(`${index + 1}. ${displayFn(item)}`);
+    Logger.logInfo(`${index + 1}. ${displayFn(item)}`);
   });
   
   const answer = await askQuestion('Enter selection number:');
   const index = parseInt(answer, 10) - 1;
   
   if (isNaN(index) || index < 0 || index >= options.length) {
-    logger.error('Invalid selection');
+    Logger.logError('Invalid selection');
     return null;
   }
   
@@ -53,17 +66,37 @@ export const askDomain = async (): Promise<string> => {
   domain = domain.trim().toLowerCase();
   
   if (!domain) {
-    logger.error('Domain is required');
+    Logger.logError('Domain is required');
     return askDomain();
   }
   
   // Domain formatını doğrula
   if (!/^[a-z0-9]([a-z0-9-]+)?[a-z0-9]$/.test(domain)) {
-    logger.error('Invalid domain format. Use lowercase letters, numbers and hyphens only. Cannot start or end with a hyphen.');
+    Logger.logError('Invalid domain format. Use lowercase letters, numbers and hyphens only. Cannot start or end with a hyphen.');
     return askDomain();
   }
   
   return domain;
+};
+
+// Şema tipi sorgusu
+export const askSchemaType = async (): Promise<string> => {
+  Logger.logInfo('Select schema type:');
+  Logger.logInfo('1. SYS - System schema');
+  Logger.logInfo('2. COMMON - Common data schema');
+  Logger.logInfo('3. TENANT - Tenant specific schema');
+  
+  const answer = await askQuestion('Enter selection number:');
+  const index = parseInt(answer, 10);
+  
+  switch (index) {
+    case 1: return 'SYS';
+    case 2: return 'COMMON'; 
+    case 3: return 'TENANT';
+    default:
+      Logger.logError('Invalid selection');
+      return askSchemaType();
+  }
 };
 
 // Email sorgusu
@@ -72,7 +105,7 @@ export const askEmail = async (): Promise<string> => {
   
   // Email formatını doğrula
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    logger.error('Invalid email format');
+    Logger.logError('Invalid email format');
     return askEmail();
   }
   
@@ -81,11 +114,11 @@ export const askEmail = async (): Promise<string> => {
 
 // Tenant türü sorgusu
 export const askTenantType = async (): Promise<string> => {
-  logger.info('Select tenant type:');
-  logger.info('1. GYM - Traditional fitness center');
-  logger.info('2. STUDIO - Specialized studio (yoga, pilates, etc.)');
-  logger.info('3. PERSONAL_TRAINER - Independent trainer');
-  logger.info('4. ENTERPRISE - Corporate wellness');
+  Logger.logInfo('Select tenant type:');
+  Logger.logInfo('1. GYM - Traditional fitness center');
+  Logger.logInfo('2. STUDIO - Specialized studio (yoga, pilates, etc.)');
+  Logger.logInfo('3. PERSONAL_TRAINER - Independent trainer');
+  Logger.logInfo('4. ENTERPRISE - Corporate wellness');
   
   const answer = await askQuestion('Enter selection number:');
   const index = parseInt(answer, 10);
@@ -96,7 +129,7 @@ export const askTenantType = async (): Promise<string> => {
     case 3: return 'PERSONAL_TRAINER';
     case 4: return 'ENTERPRISE';
     default:
-      logger.error('Invalid selection');
+      Logger.logError('Invalid selection');
       return askTenantType();
   }
 }; 

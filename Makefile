@@ -12,24 +12,24 @@ setup-all: ## Docker ortamında tam kurulum (migration ve seed işlemleri dahil)
 	@echo "⏳ PostgreSQL'in hazır olması bekleniyor..."
 	@sleep 10
 	@echo "🔄 Public şema migrasyonları çalıştırılıyor..."
-	docker-compose exec api npm run migration:run:public
+	docker-compose exec api npm run db:migration:run:public
 	@echo "🌱 Admin kullanıcıları ve tenantlar ekleniyor..."
 	docker-compose exec api npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
 	@echo "🔄 Tenant şemaları oluşturuluyor..."
-	docker-compose exec api npm run migration:run:tenant
+	docker-compose exec api npm run db:migration:run:tenant
 	@echo "🌱 Tenant kullanıcıları ekleniyor..."
 	docker-compose exec api node scripts/seed-tenant-users.js
 	@echo "✅ Docker kurulumu tamamlandı!"
 
 
 docker-migrate-public: ## Docker içinde public şema migrasyonlarını çalıştır
-	docker-compose exec api npm run migration:run:public
+	docker-compose exec api npm run db:migration:run:public
 
 docker-seed-admin: ## Docker içinde admin kullanıcıları ve tenant'ları ekle
 	docker-compose exec api npm run migration:run -- -d ./src/shared/database/config/public-connection.ts --name=SeedAdminUsers
 
 docker-migrate-tenant: ## Docker içinde tenant şemalarını oluştur
-	docker-compose exec api npm run migration:run:tenant
+	docker-compose exec api npm run db:migration:run:tenant
 
 docker-seed-tenant-users: ## Docker içinde tenant kullanıcılarını ekle
 	docker-compose exec api node scripts/seed-tenant-users.js
@@ -42,10 +42,10 @@ docker-db-status: ## Docker içinde veritabanı durumunu kontrol et
 	@echo "📊 Docker PostgreSQL Durumu:"
 	@echo "=========================="
 	docker-compose exec postgres pg_isready -U nexphys_user
-	@echo ""
+	@echo "=========================="
 	@echo "Public Şema Tabloları:"
 	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "\dt public.*"
-	@echo ""
+	@echo "=========================="
 	@echo "Tenant Şemaları:"
 	docker-compose exec postgres psql -U nexphys_user -d nexphys_db -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
 
@@ -81,20 +81,20 @@ seed-all: ## Seed all schemas (public + all tenants)
 	make seed-public-local && make seed-tenants-local
 
 seed-tenants-local: ## Seed all tenant schemas locally
-	DB_HOST=localhost DB_PORT=5432 npm run seed:tenant
+	DB_HOST=localhost DB_PORT=5432 npm run db:seed:tenant
 
 seed-specific-tenant: ## Seed specific tenant (TENANT=domain)
 	@if [ -z "$(TENANT)" ]; then echo "❌ TENANT is required. Usage: make seed-specific-tenant TENANT=fitmax-gym"; exit 1; fi
-	DB_HOST=localhost DB_PORT=5432 npm run seed:tenant $(TENANT)
+	DB_HOST=localhost DB_PORT=5432 npm run db:seed:tenant $(TENANT)
 
 ##@ Nexphys.com Development Environment
 migrate-public-local: ## Run public schema migrations locally
 	@echo "🔄 Running public schema migrations locally..."
-	docker-compose exec api npm run migration:run:public
+	docker-compose exec api npm run db:migration:run:public
 
 migrate-tenant-local: ## Run tenant schema migrations locally
 	@echo "🔄 Running tenant schema migrations locally..."
-	docker-compose exec api npm run migration:run:tenant
+	docker-compose exec api npm run db:migration:run:tenant
 
 nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant types
 	@echo "🚀 Setting up Nexphys.com multi-tenant development environment with correct tenant-per-schema architecture..."
@@ -117,6 +117,21 @@ nexphys-dev-setup: ## Complete nexphys.com development setup with all tenant typ
 	@echo "  • STUDIO: owner@zen-yoga / password123, manager@zen-yoga / password123, instructor@zen-yoga / password123, student@zen-yoga / password123"
 	@echo "  • PT: coach@elite-pt / password123, client@elite-pt / password123"
 	@echo "  • ENTERPRISE: wellness@techcorp-wellness / password123, coach@techcorp-wellness / password123, employee@techcorp-wellness / password123"
+
+setup-role-tenants: ## Set up tenants for each role type (development/testing)
+	@echo "🚀 Setting up role-based test tenants..."
+	docker-compose exec api npm run nexphys:setup:dev -- -s
+	@echo "🧩 Setting up roles for each tenant..."
+	docker-compose exec api npm run nexphys:setup:roles -- -a
+	@echo "✅ Role-based tenant setup complete!"
+	@echo ""
+	@echo "🧪 Role-based test tenants created for each role type:"
+	@echo "  • GYM: gym-owner-tenant, gym-coach-tenant, gym-member-tenant"
+	@echo "  • STUDIO: studio-owner-tenant, studio-instructor-tenant, studio-member-tenant"
+	@echo "  • PERSONAL TRAINER: personal-trainer-tenant, client-tenant"
+	@echo "  • ENTERPRISE: enterprise-admin-tenant"
+	@echo ""
+	@echo "👤 Each tenant has been configured with the primary role it's designed to test"
 
 seed-public-nexphys: ## Seed public schema with nexphys.com data
 	@echo "🌱 Seeding public schema with nexphys.com data..."

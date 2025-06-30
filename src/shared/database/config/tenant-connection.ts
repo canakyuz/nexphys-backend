@@ -68,7 +68,6 @@ export const closeTenantConnection = async (schemaName: string): Promise<void> =
   if (connection && connection.isInitialized) {
     await connection.destroy();
     tenantConnections.delete(schemaName);
-    console.log(`✅ Tenant connection closed: ${schemaName}`);
   }
 };
 
@@ -78,14 +77,12 @@ export const closeAllTenantConnections = async (): Promise<void> => {
     async ([schemaName, connection]) => {
       if (connection.isInitialized) {
         await connection.destroy();
-        console.log(`✅ Tenant connection closed: ${schemaName}`);
       }
     }
   );
 
   await Promise.all(closePromises);
   tenantConnections.clear();
-  console.log('✅ All tenant connections closed');
 };
 
 // For TypeORM CLI - default tenant connection

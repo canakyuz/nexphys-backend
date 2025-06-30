@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
-import { envConfig } from '@/config/env.config';
-import { PublicDataSource } from '@/shared/database/config/public-connection';
-import { logger } from '@/shared/utils/logger.util';
+import { envConfig } from '../../config/env.config';
+import { PublicDataSource } from '../../shared/database/config/public-connection';
+import * as Logger from './logger';
 
 // Yeni veritabanı mimarisine uygun sabitler
 export const SCHEMA_TYPES = {
@@ -31,7 +31,7 @@ export const schemaExists = async (schemaName: string): Promise<boolean> => {
     );
     return result.length > 0;
   } catch (error) {
-    logger.error(`Error checking schema existence for ${schemaName}:`, error);
+    Logger.logError(`Error checking schema existence for ${schemaName}:`, error);
     return false;
   }
 };
@@ -40,10 +40,10 @@ export const schemaExists = async (schemaName: string): Promise<boolean> => {
 export const createSchema = async (schemaName: string): Promise<boolean> => {
   try {
     await PublicDataSource.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-    logger.info(`Schema created: ${schemaName}`);
+    Logger.logInfo(`Schema created: ${schemaName}`);
     return true;
   } catch (error) {
-    logger.error(`Error creating schema ${schemaName}:`, error);
+    Logger.logError(`Error creating schema ${schemaName}:`, error);
     return false;
   }
 };
@@ -52,10 +52,10 @@ export const createSchema = async (schemaName: string): Promise<boolean> => {
 export const dropSchema = async (schemaName: string): Promise<boolean> => {
   try {
     await PublicDataSource.query(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    logger.info(`Schema dropped: ${schemaName}`);
+    Logger.logInfo(`Schema dropped: ${schemaName}`);
     return true;
   } catch (error) {
-    logger.error(`Error dropping schema ${schemaName}:`, error);
+    Logger.logError(`Error dropping schema ${schemaName}:`, error);
     return false;
   }
 };
@@ -120,7 +120,7 @@ export const tenantExists = async (domain: string): Promise<boolean> => {
     );
     return result.length > 0;
   } catch (error) {
-    logger.error(`Error checking tenant existence for ${domain}:`, error);
+    Logger.logError(`Error checking tenant existence for ${domain}:`, error);
     return false;
   }
 }; 
