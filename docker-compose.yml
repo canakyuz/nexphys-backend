@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: nexphys-postgres
+    container_name: np-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: nexphys_db
@@ -24,7 +22,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: nexphys-redis
+    container_name: np-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -42,7 +40,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: nexphys-api
+    container_name: np-api
     restart: unless-stopped
     ports:
       - "4000:4000"
